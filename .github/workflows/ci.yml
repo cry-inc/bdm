@@ -1,18 +1,27 @@
 on: [push]
 jobs:
-  build-and-test:
+  build-and-test-linux:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - run: go version
-      - run: GOOS=linux GOARCH=amd64 go build -o bdm -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
-      - run: GOOS=windows GOARCH=amd64 go build -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
-      - run: go test ./...
+      - run: GOOS=linux GOARCH=amd64 go build -v -o bdm -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
+      - run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
+      - run: go test -v ./...
       - run: ./bdm -about
-      - run: cd clib && go build -buildmode=c-archive -o bdm.lib
+      - run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
       - run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
-  build-docker-image:
+  build-and-test-windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go version
+      - run: go build -v
+      - run: go test -v ./...
+      - run: .\bdm.exe -about
+  docker-image:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
