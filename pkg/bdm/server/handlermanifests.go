@@ -121,7 +121,6 @@ func createPublishManifestHandler(packageStore store.Store, apiKey string) httpr
 			return
 		}
 
-		jsonData := make([]byte, 0)
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			http.Error(writer, "Bad request", http.StatusBadRequest)
