@@ -12,3 +12,9 @@ jobs:
       - run: ./bdm -about
       - run: cd clib && go build -buildmode=c-archive -o bdm.lib
       - run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
+  build-docker-image:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build . -t=bdm
+      - run: docker run --rm bdm bdm -about
