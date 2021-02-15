@@ -6,6 +6,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - run: go version
-      - run: go build
+      - run: GOOS=linux GOARCH=amd64 go build -o bdm -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
+      - run: GOOS=windows GOARCH=amd64 go build -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
       - run: go test ./...
       - run: ./bdm -about
