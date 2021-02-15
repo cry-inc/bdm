@@ -1,5 +1,8 @@
 # Binary Data Manager
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/cry-inc/bdm)](https://goreportcard.com/report/github.com/cry-inc/bdm)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 The Binary Data Mangager is a system that allows users to create a versioned repository of packages. A package is just a folder with a bunch of files in it. Packages are immutable, once published they stay always the same and cannot be modified. If you want to change a package, you must publish a new version of the package. The system was designed to handle binary assets used for testing in software development, but can be also used for other kinds of assets and artifacts that can be represented as a set of files.
 
 The system works centralized with a repository server. This server holds all packages. Clients can upload new packages or download them from the server. The server uses HTTP to communicate with clients.
