@@ -36,23 +36,23 @@ func CreateRouter(packageStore store.Store, apiKey string) (http.Handler, error)
 	router.GET("/manifests/:name/:version", createManifestHandler(packageStore))
 
 	// Upload one or more objects. The compressed request body contains:
-	// - 8 bytes uint for JSON data lenght
+	// - 8 bytes uint for JSON data length
 	// - JSON data with bdm.Object array
 	// - object data
 	// The response body contains the uploaded objects as JSON array.
 	router.POST("/objects/upload", createUploadObjectsHandler(packageStore, apiKey))
 
 	// Check for existing objects. The request body contains:
-	// - 8 bytes uint for JSON data lenght
+	// - 8 bytes uint for JSON data length
 	// - compressed JSON data with bdm.Object array
 	// The response body contains the found objects as JSON array.
 	router.POST("/objects/check", createCheckObjectsHandler(packageStore))
 
 	// Download objects. The request body contains:
-	// - 8 bytes uint for JSON data lenght
+	// - 8 bytes uint for JSON data length
 	// - compressed JSON data with bdm.Object array
 	// The response body contains:
-	// - 8 bytes uint for JSON data lenght
+	// - 8 bytes uint for JSON data length
 	// - compressed JSON data with bdm.Object array
 	// - compressed object data
 	router.POST("/objects/download", createDownloadObjectsHandler(packageStore))

@@ -78,7 +78,7 @@ func AllObjectsExist(manifest *bdm.Manifest, store Store) bool {
 	return true
 }
 
-// ValidateStore validates the wohle package store.
+// ValidateStore validates the whole package store.
 // It will validate all manifests,
 // check that all the objects of all manifests exist and
 // check that all objects are valid and produce the correct hash.
