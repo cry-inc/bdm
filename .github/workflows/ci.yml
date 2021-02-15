@@ -10,3 +10,5 @@ jobs:
       - run: GOOS=windows GOARCH=amd64 go build -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
       - run: go test ./...
       - run: ./bdm -about
+      - run: cd clib && go build -buildmode=c-archive -o bdm.lib
+      - run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
