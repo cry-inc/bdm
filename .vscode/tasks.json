@@ -1,0 +1,76 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "test",
+            "group": "build",
+            "type": "shell",
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "command": "go test ./...",
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "focus": true,
+                "clear": true,
+            },
+            "command": "go build"
+        },
+        {
+            "label": "build clib",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "focus": true,
+                "clear": true,
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/clib"
+            },
+            "command": "go build -buildmode=c-archive -o bdm.lib"
+        },
+        {
+            "label": "build c example",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "focus": true,
+                "clear": true,
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/csample"
+            },
+            "command": "gcc -o example.exe example.c ../clib/bdm.lib"
+        },
+        {
+            "label": "collect_coverage",
+            "type": "shell",
+            "group": "none",
+            "command": "go",
+            "args": [
+                "test",
+                "-coverpkg='git.caputo.de/macaputo/bdm,git.caputo.de/macaputo/bdm/pkg/bdm/util,git.caputo.de/macaputo/bdm/pkg/bdm/client,git.caputo.de/macaputo/bdm/pkg/bdm/server,git.caputo.de/macaputo/bdm/pkg/bdm/store'",
+                "-coverprofile=coverage",
+                "./..."
+            ]
+        },
+        {
+            "label": "show_coverage",
+            "type": "shell",
+            "group": "none",
+            "command": "go tool cover -html=coverage"
+        },
+        {
+          "label": "coverage",
+          "dependsOrder": "sequence",
+          "dependsOn": ["collect_coverage", "show_coverage"]
+        }
+    ]
+}

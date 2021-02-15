@@ -1,0 +1,59 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Upload",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-upload", "-package=foo", "-remote=http://127.0.0.1:2323", "-input=test/example", "-key=1234"]
+        },
+        {
+            "name": "Download",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-download", "-clean", "-package=foo", "-version=1", "-remote=http://127.0.0.1:2323", "-output=test/out"]
+        },
+        {
+            "name": "Check",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-check", "-clean", "-package=foo", "-version=1", "-remote=http://127.0.0.1:2323", "-input=test/out"]
+        },
+        {
+            "name": "Server HTTP",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-server", "-key=1234", "-store=test/store"]
+        },
+        {
+            "name": "Server HTTPS",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-server", "-key=1234", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
+        },
+        {
+            "name": "Validate",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": ["-validate", "-store=test/store"]
+        }
+    ]
+}

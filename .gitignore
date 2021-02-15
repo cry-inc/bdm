@@ -1,0 +1,11 @@
+/bdm.exe
+/bdm
+/todo.txt
+/coverage
+/clib/bdm.lib
+/clib/bdm.h
+/csample/example.exe
+/test/*.pem
+/test/store
+/test/out
+/test/cache
