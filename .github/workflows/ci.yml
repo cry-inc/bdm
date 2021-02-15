@@ -1,0 +1,11 @@
+on: [push]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: go version
+      - run: go build
+      - run: go test ./...
+      - run: ./bdm -about
