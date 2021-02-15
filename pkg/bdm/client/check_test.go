@@ -6,7 +6,7 @@ import (
 	"path"
 	"testing"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm"
 )
 
 func TestCheckFiles(t *testing.T) {

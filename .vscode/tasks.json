@@ -56,7 +56,7 @@
             "command": "go",
             "args": [
                 "test",
-                "-coverpkg='git.caputo.de/macaputo/bdm,git.caputo.de/macaputo/bdm/pkg/bdm/util,git.caputo.de/macaputo/bdm/pkg/bdm/client,git.caputo.de/macaputo/bdm/pkg/bdm/server,git.caputo.de/macaputo/bdm/pkg/bdm/store'",
+                "-coverpkg='github.com/cry-inc/bdm,github.com/cry-inc/bdm/pkg/bdm/util,github.com/cry-inc/bdm/pkg/bdm/client,github.com/cry-inc/bdm/pkg/bdm/server,github.com/cry-inc/bdm/pkg/bdm/store'",
                 "-coverprofile=coverage",
                 "./..."
             ]

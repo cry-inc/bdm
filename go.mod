@@ -1,4 +1,4 @@
-module git.caputo.de/macaputo/bdm
+module github.com/cry-inc/bdm
 
 go 1.15
 

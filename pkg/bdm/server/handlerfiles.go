@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/store"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/store"
 	"github.com/julienschmidt/httprouter"
 )
 

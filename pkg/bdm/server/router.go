@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm/store"
+	"github.com/cry-inc/bdm/pkg/bdm/store"
 	"github.com/julienschmidt/httprouter"
 )
 

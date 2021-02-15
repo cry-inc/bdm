@@ -3,7 +3,7 @@ package main
 import "C"
 
 import (
-	"git.caputo.de/macaputo/bdm/pkg/bdm/client"
+	"github.com/cry-inc/bdm/pkg/bdm/client"
 )
 
 func main() {}

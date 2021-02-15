@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 // 10 MB should be enough for the objects JSON data!

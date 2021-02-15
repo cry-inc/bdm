@@ -6,8 +6,8 @@ import (
 	"path"
 	"testing"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestCleanPackage(t *testing.T) {

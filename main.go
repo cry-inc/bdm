@@ -9,11 +9,11 @@ import (
 	"regexp"
 	"runtime"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/client"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/server"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/store"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/client"
+	"github.com/cry-inc/bdm/pkg/bdm/server"
+	"github.com/cry-inc/bdm/pkg/bdm/store"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 // BDM version (optionally injected during build)

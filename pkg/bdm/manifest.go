@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 // Object represents the content of a package file

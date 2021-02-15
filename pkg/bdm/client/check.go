@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 // CheckPackage will check an existing loack package folder against the manifest

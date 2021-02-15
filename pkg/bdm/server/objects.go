@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/store"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/store"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func streamObjectsToStore(input io.Reader, store store.Store) ([]bdm.Object, error) {

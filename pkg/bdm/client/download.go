@@ -9,9 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/store"
-	"git.caputo.de/macaputo/bdm/pkg/bdm/util"
+	"github.com/cry-inc/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm/store"
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 // DownloadPackage downloads a package from a remote server to a local folder

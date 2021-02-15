@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.caputo.de/macaputo/bdm/pkg/bdm"
+	"github.com/cry-inc/bdm/pkg/bdm"
 )
 
 func hasFile(relPath string, manifest *bdm.Manifest) bool {
