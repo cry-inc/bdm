@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -272,6 +273,45 @@ func TestServerZipHandler(t *testing.T) {
 	}
 	if manifestOrg.Hash != manifestZipped.Hash {
 		t.Fatal(manifestOrg, manifestZipped)
+	}
+}
+
+func TestServerStaticHandler(t *testing.T) {
+	// Creation and cleanup of server store
+	server, stopped := startTestingServer(t)
+	defer stopTestingServer(server, stopped)
+
+	// Request UI
+	urlPath := "/"
+	body, headers, err := httpGet(urlPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Content type must be HTML
+	if headers["Content-Type"][0] != "text/html" {
+		t.Fatal(headers)
+	}
+
+	// Check for HTML content
+	if len(body) <= 0 || !strings.Contains(string(body), "<html") {
+		t.Fatal(body)
+	}
+
+	// Request favicon
+	urlPath = "/favicon.ico"
+	body, headers, err = httpGet(urlPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check content type
+	if headers["Content-Type"][0] != "image/x-icon" {
+		t.Fatal(headers)
+	}
+
+	if len(body) <= 0 {
+		t.Fatal(body)
 	}
 }
 
