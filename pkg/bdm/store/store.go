@@ -135,7 +135,7 @@ func checkObject(store Store, object *bdm.Object) error {
 func ValidateStore(store Store) (map[string]int64, error) {
 	manifests, err := getAllManifests(store)
 	if err != nil {
-		return nil, fmt.Errorf("error listing all manifests: %v", err)
+		return nil, fmt.Errorf("error listing all manifests: %w", err)
 	}
 
 	// Validate all manifests
