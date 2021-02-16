@@ -30,31 +30,40 @@ func CheckCachedPackage(packageFolder, cacheFolder, serverURL, name string, vers
 	return CheckFiles(manifest, packageFolder, clean)
 }
 
+func checkFile(file bdm.File, packageFolder string) error {
+	fullPath := filepath.Join(packageFolder, file.Path)
+	if !util.FileExists(fullPath) {
+		return fmt.Errorf("cannot find file %s", file.Path)
+	}
+	fileInfo, err := os.Stat(fullPath)
+	if err != nil {
+		return fmt.Errorf("error reading stats for file %s: %w",
+			fullPath, err)
+	}
+	if fileInfo.Size() != file.Object.Size {
+		return fmt.Errorf("file %s has the wrong size: expected %d and found %d bytes",
+			file.Path, file.Object.Size, fileInfo.Size())
+	}
+	hash, err := util.HashFile(fullPath)
+	if err != nil {
+		return fmt.Errorf("error hashing file %s: %w",
+			fullPath, err)
+	}
+	if hash != file.Object.Hash {
+		return fmt.Errorf("file %s produced the wrong hash: expected %s and found %s",
+			file.Path, file.Object.Hash, hash)
+	}
+
+	return nil
+}
+
 // CheckFiles compare a folder against a manifest and complain about missing or wrong files.
 // It will also complain about non-package files if clean is set to true.
 func CheckFiles(manifest *bdm.Manifest, packageFolder string, clean bool) error {
 	for _, file := range manifest.Files {
-		fullPath := filepath.Join(packageFolder, file.Path)
-		if !util.FileExists(fullPath) {
-			return fmt.Errorf("cannot find file %s", file.Path)
-		}
-		fileInfo, err := os.Stat(fullPath)
+		err := checkFile(file, packageFolder)
 		if err != nil {
-			return fmt.Errorf("error reading stats for file %s: %w",
-				fullPath, err)
-		}
-		if fileInfo.Size() != file.Object.Size {
-			return fmt.Errorf("file %s has the wrong size: expected %d and found %d bytes",
-				file.Path, file.Object.Size, fileInfo.Size())
-		}
-		hash, err := util.HashFile(fullPath)
-		if err != nil {
-			return fmt.Errorf("error hashing file %s: %w",
-				fullPath, err)
-		}
-		if hash != file.Object.Hash {
-			return fmt.Errorf("file %s produced the wrong hash: expected %s and found %s",
-				file.Path, file.Object.Hash, hash)
+			return fmt.Errorf("found problem while check file: %w", err)
 		}
 	}
 
