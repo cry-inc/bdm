@@ -78,42 +78,83 @@ func AllObjectsExist(manifest *bdm.Manifest, store Store) bool {
 	return true
 }
 
-// ValidateStore validates the whole package store.
-// It will validate all manifests,
-// check that all the objects of all manifests exist and
-// check that all objects are valid and produce the correct hash.
-func ValidateStore(store Store) (map[string]int64, error) {
+func getAllManifests(store Store) ([]*bdm.Manifest, error) {
 	manifests := make([]*bdm.Manifest, 0)
 	names, err := store.GetNames()
 	if err != nil {
 		return nil, fmt.Errorf("error getting manifest names: %w", err)
 	}
-	var packageVersions int64 = 0
 	for _, name := range names {
 		versions, err := store.GetVersions(name)
 		if err != nil {
 			return nil, fmt.Errorf("error getting package versions for %s: %w", name, err)
 		}
-		packageVersions += int64(len(versions))
 		for _, version := range versions {
 			manifest, err := store.GetManifest(name, version)
 			if err != nil {
 				return nil, fmt.Errorf("error getting manifest %s version %d: %w",
 					name, version, err)
 			}
-			err = bdm.ValidatePublishedManifest(manifest)
-			if err != nil {
-				return nil, fmt.Errorf("error validating published manifest %s version %d: %w",
-					name, version, err)
-			}
 			manifests = append(manifests, manifest)
 		}
 	}
+	return manifests, nil
+}
 
+func checkObject(store Store, object *bdm.Object) error {
+	reader, err := store.ReadObject(object.Hash)
+	if err != nil {
+		return fmt.Errorf("error reading object %s: %w", object.Hash, err)
+	}
+	defer reader.Close()
+
+	hasher := util.CreateHasher()
+	read, err := io.Copy(hasher, reader)
+	if err != nil {
+		return fmt.Errorf("error hashing object %s: %w", object.Hash, err)
+	}
+	if read != object.Size {
+		return fmt.Errorf("found size mismatch for object %s: expected %d but read %d bytes",
+			object.Hash, object.Size, read)
+	}
+
+	hash := util.GetHashString(hasher)
+	if hash != object.Hash {
+		return fmt.Errorf("found hash mismatch for object %s: expected %s but found %s",
+			object.Hash, object.Hash, hash)
+	}
+
+	return nil
+}
+
+// ValidateStore validates the whole package store.
+// It will validate all manifests,
+// check that all the objects of all manifests exist and
+// check that all objects are valid and produce the correct hash.
+// It also returns a map with some simple store statistics.
+func ValidateStore(store Store) (map[string]int64, error) {
+	manifests, err := getAllManifests(store)
+	if err != nil {
+		return nil, fmt.Errorf("error listing all manifests: %v", err)
+	}
+
+	// Validate all manifests
+	for _, manifest := range manifests {
+		err = bdm.ValidatePublishedManifest(manifest)
+		if err != nil {
+			return nil, fmt.Errorf("error validating published manifest %s version %d: %w",
+				manifest.PackageName, manifest.PackageVersion, err)
+		}
+	}
+
+	// Get all object metadata
 	objects, err := store.GetObjects()
 	if err != nil {
 		return nil, fmt.Errorf("error getting objects list from store: %w", err)
 	}
+
+	// Build map[hash]object for fast lookup
+	// and use the loop to also sum up overall size
 	objectsMap := make(map[string]*bdm.Object)
 	var objectsSize int64 = 0
 	for _, object := range objects {
@@ -121,6 +162,7 @@ func ValidateStore(store Store) (map[string]int64, error) {
 		objectsSize += object.Size
 	}
 
+	// Check if all objects for all manifests exist
 	for _, manifest := range manifests {
 		for _, file := range manifest.Files {
 			if _, ok := objectsMap[file.Object.Hash]; !ok {
@@ -130,34 +172,18 @@ func ValidateStore(store Store) (map[string]int64, error) {
 		}
 	}
 
+	// Check all object data for consistency
 	for _, object := range objects {
-		reader, err := store.ReadObject(object.Hash)
+		err = checkObject(store, object)
 		if err != nil {
-			return nil, fmt.Errorf("error reading object %s: %w", object.Hash, err)
-		}
-		defer reader.Close()
-
-		hasher := util.CreateHasher()
-		read, err := io.Copy(hasher, reader)
-		if err != nil {
-			return nil, fmt.Errorf("error hashing object %s: %w", object.Hash, err)
-		}
-		if read != object.Size {
-			return nil, fmt.Errorf("found size mismatch for object %s: expected %d but read %d bytes",
-				object.Hash, object.Size, read)
-		}
-
-		hash := util.GetHashString(hasher)
-		if hash != object.Hash {
-			return nil, fmt.Errorf("found hash mismatch for object %s: expected %s but found %s",
-				object.Hash, object.Hash, hash)
+			return nil, fmt.Errorf("found problem while checking object: %w", err)
 		}
 	}
 
 	stats := make(map[string]int64)
-	stats["packages"] = int64(len(names))
-	stats["packageVersions"] = packageVersions
+	stats["packages"] = int64(len(manifests))
 	stats["objects"] = int64(len(objects))
-	stats["objectsSize"] = objectsSize
+	stats["size"] = objectsSize
+
 	return stats, nil
 }

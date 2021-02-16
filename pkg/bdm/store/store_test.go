@@ -209,9 +209,8 @@ func TestStore(t *testing.T) {
 
 	// Check store validatsion stats
 	if stats["objects"] != 2 ||
-		stats["objectsSize"] != 8 ||
-		stats["packageVersions"] != 2 ||
-		stats["packages"] != 1 {
+		stats["size"] != 8 ||
+		stats["packages"] != 2 {
 		t.Fatal(stats)
 	}
 }
