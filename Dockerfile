@@ -2,6 +2,7 @@ FROM golang:1-alpine AS builder
 RUN apk update && apk add --no-cache git
 WORKDIR $GOPATH/src/bdm/
 COPY . .
+RUN go version
 RUN go build -o /go/bin/bdm
 RUN mkdir /bdmstore
 RUN mkdir /bdmcerts
