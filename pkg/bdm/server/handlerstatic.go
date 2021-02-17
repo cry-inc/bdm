@@ -2,34 +2,34 @@ package server
 
 import (
 	"embed"
+	"mime"
 	"net/http"
+	"path/filepath"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-//go:embed static/*
+//go:embed static
 var staticFs embed.FS
 
-func createHTMLHandler() httprouter.Handle {
+func createStaticHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		html, err := staticFs.ReadFile("static/index.html")
+		path := r.URL.Path
+		if path == "/" {
+			path = "/index.html"
+		}
+		data, err := staticFs.ReadFile("static" + path)
 		if err != nil {
-			http.Error(w, "Failed to read file", http.StatusInternalServerError)
+			http.Error(w, "File not found", http.StatusNotFound)
 			return
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write(html)
-	}
-}
-
-func createFaviconHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		icon, err := staticFs.ReadFile("static/favicon.ico")
-		if err != nil {
-			http.Error(w, "Failed to read file", http.StatusInternalServerError)
-			return
+		ext := filepath.Ext(path)
+		if len(ext) > 0 {
+			mimeType := mime.TypeByExtension("." + ext)
+			if len(mimeType) > 0 {
+				w.Header().Set("Content-Type", mimeType)
+			}
 		}
-		w.Header().Set("Content-Type", "image/x-icon")
-		w.Write(icon)
+		w.Write(data)
 	}
 }
