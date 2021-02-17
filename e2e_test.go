@@ -289,7 +289,7 @@ func TestServerStaticHandler(t *testing.T) {
 	}
 
 	// Content type must be HTML
-	if headers["Content-Type"][0] != "text/html" {
+	if !strings.Contains(headers["Content-Type"][0], "text/html") {
 		t.Fatal(headers)
 	}
 

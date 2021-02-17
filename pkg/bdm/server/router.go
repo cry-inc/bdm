@@ -13,12 +13,10 @@ const apiKeyField = "bdm-api-key"
 func CreateRouter(packageStore store.Store, apiKey string) (http.Handler, error) {
 	router := httprouter.New()
 
-	// Return HTML with user interface
-	router.GET("/", createHTMLHandler())
-	router.GET("/index.html", createHTMLHandler())
-
-	// Favicon
-	router.GET("/favicon.ico", createFaviconHandler())
+	// Static assets for HTML UI
+	staticHandler := createStaticHandler()
+	router.GET("/", staticHandler)
+	router.GET("/favicon.ico", staticHandler)
 
 	// Download package files as ZIP
 	router.GET("/zip/:name/:version", createZipHandler(packageStore))
