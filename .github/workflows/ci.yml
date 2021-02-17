@@ -6,6 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
       - run: go version
       - run: GOOS=linux GOARCH=amd64 go build -v -o bdm -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
       - run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
@@ -18,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
       - run: go version
       - run: go build -v
       - run: go test -v ./...
