@@ -239,12 +239,12 @@ func validateStore(storeFolder string) {
 
 func validateServerURL(serverURL string) error {
 	if len(serverURL) == 0 {
-		return fmt.Errorf("Missing URL for remote server")
+		return fmt.Errorf("missing URL for remote server")
 	}
 
 	matched, _ := regexp.MatchString(`^http([s]?)://.+[^/]$`, serverURL)
 	if !matched {
-		return fmt.Errorf("Server URL must be a valid HTTP or HTTPS URL without a trailing slash")
+		return fmt.Errorf("server URL must be a valid HTTP or HTTPS URL without a trailing slash")
 	}
 
 	return nil

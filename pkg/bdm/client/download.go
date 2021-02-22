@@ -204,13 +204,13 @@ func writeObjectToFiles(reader io.Reader, files []bdm.File, outputFolder string)
 func copyFile(source, target, hash string) error {
 	readHandle, err := os.Open(source)
 	if err != nil {
-		return fmt.Errorf("Unable to open source file %s: %w", source, err)
+		return fmt.Errorf("unable to open source file %s: %w", source, err)
 	}
 	defer readHandle.Close()
 
 	writeHandle, err := os.Create(target)
 	if err != nil {
-		return fmt.Errorf("Unable to open target file %s: %w", target, err)
+		return fmt.Errorf("unable to open target file %s: %w", target, err)
 	}
 	defer writeHandle.Close()
 
@@ -219,10 +219,10 @@ func copyFile(source, target, hash string) error {
 
 	_, err = io.Copy(writer, readHandle)
 	if err != nil {
-		return fmt.Errorf("Unable to copy file data: %w", err)
+		return fmt.Errorf("unable to copy file data: %w", err)
 	}
 	if util.GetHashString(hasher) != hash {
-		return fmt.Errorf("Failed to verify file content: Hash mismatch")
+		return fmt.Errorf("failed to verify file content: Hash mismatch")
 	}
 
 	return nil

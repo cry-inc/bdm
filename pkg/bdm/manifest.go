@@ -111,18 +111,24 @@ func validateBasicManifest(manifest *Manifest) error {
 		return fmt.Errorf("manifest contains no files")
 	}
 
+	// compile expression for hash matching outside of loop
+	exp, err := regexp.Compile(`^[a-f0-9_-]+$`)
+	if err != nil {
+		return fmt.Errorf("failed to compile regex: %w", err)
+	}
+
 	paths := make(map[string]bool)
 	for _, file := range manifest.Files {
 		if len(file.Path) == 0 {
 			return fmt.Errorf("found empty file path")
 		}
-		if strings.Index(file.Path, "..") != -1 {
+		if strings.Contains(file.Path, "..") {
 			return fmt.Errorf("invalid file path %s", file.Path)
 		}
 		if file.Object.Size < 0 {
 			return fmt.Errorf("invalid object size %d for file %s", file.Object.Size, file.Path)
 		}
-		validHash, _ := regexp.MatchString(`^[a-f0-9_-]+$`, file.Object.Hash)
+		validHash := exp.MatchString(file.Object.Hash)
 		if !validHash {
 			return fmt.Errorf("invalid object hash %s", file.Object.Hash)
 		}

@@ -95,7 +95,7 @@ func CheckFiles(manifest *bdm.Manifest, packageFolder string, clean bool) error 
 
 		// Normalize (Windows) paths
 		relPath = filepath.ToSlash(relPath)
-		if strings.Index(relPath, ".") == 0 || strings.Index(relPath, "..") != -1 {
+		if strings.Index(relPath, ".") == 0 || strings.Contains(relPath, "..") {
 			return nil
 		}
 

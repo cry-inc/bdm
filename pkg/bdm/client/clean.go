@@ -56,7 +56,7 @@ func CleanPackage(manifest *bdm.Manifest, packageFolder string) error {
 				absFolder, absFile, err)
 		}
 		relPath = filepath.ToSlash(relPath)
-		if strings.Index(relPath, ".") == 0 || strings.Index(relPath, "..") != -1 {
+		if strings.Index(relPath, ".") == 0 || strings.Contains(relPath, "..") {
 			return nil
 		}
 		fileMode := fileInfo.Mode()
