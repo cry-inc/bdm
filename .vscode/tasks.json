@@ -71,6 +71,18 @@
           "label": "coverage",
           "dependsOrder": "sequence",
           "dependsOn": ["collect_coverage", "show_coverage"]
+        },
+        {
+            "label": "gocyclo",
+            "type": "shell",
+            "group": "none",
+            "command": "gocyclo -over 15 ."
+        },
+        {
+            "label": "static check",
+            "type": "shell",
+            "group": "none",
+            "command": "staticcheck github.com/cry-inc/bdm/..."
         }
     ]
 }
