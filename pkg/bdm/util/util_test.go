@@ -4,11 +4,11 @@ import (
 	"testing"
 )
 
-func testValue(t *testing.T, value int64) {
-	bytes := Int64ToBytes(0)
-	value, err := Int64FromBytes(bytes)
-	if value != 0 || err != nil {
-		t.Fatal(value)
+func testValue(t *testing.T, input int64) {
+	bytes := Int64ToBytes(input)
+	output, err := Int64FromBytes(bytes)
+	if output != input || err != nil {
+		t.Fatal(output)
 	}
 }
 
