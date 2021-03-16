@@ -32,10 +32,10 @@ func TestDefaultLimits(t *testing.T) {
 func TestCustomLimits(t *testing.T) {
 	// Define some limits for testing
 	limits := ManifestLimits{
-		MaxFileSize:   1000,
-		MaxFilesCount: 2,
-		MaxSize:       1500,
-		MaxPathLength: 10,
+		MaxFileSize:    1000,
+		MaxFilesCount:  2,
+		MaxPackageSize: 1500,
+		MaxPathLength:  10,
 	}
 
 	// Prepare a small manifest within limits to check

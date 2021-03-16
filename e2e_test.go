@@ -321,7 +321,8 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 		t.Fatal(err)
 	}
 
-	handler, err := server.CreateRouter(packageStore, apiKey)
+	limits := bdm.ManifestLimits{}
+	handler, err := server.CreateRouter(packageStore, &limits, apiKey)
 	if err != nil {
 		t.Fatal(err)
 	}

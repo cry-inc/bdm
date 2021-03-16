@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/cry-inc/bdm/pkg/bdm/store"
 	"github.com/julienschmidt/httprouter"
 )
@@ -10,7 +11,7 @@ import (
 const apiKeyField = "bdm-api-key"
 
 // CreateRouter creates a new HTTP handler that handles all server routes
-func CreateRouter(packageStore store.Store, apiKey string) (http.Handler, error) {
+func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, apiKey string) (http.Handler, error) {
 	router := httprouter.New()
 
 	// Static assets for HTML UI
@@ -22,7 +23,7 @@ func CreateRouter(packageStore store.Store, apiKey string) (http.Handler, error)
 	router.GET("/zip/:name/:version", createZipHandler(packageStore))
 
 	// Publish manifest for package
-	router.POST("/manifests", createPublishManifestHandler(packageStore, apiKey))
+	router.POST("/manifests", createPublishManifestHandler(packageStore, limits, apiKey))
 
 	// Get list of package names
 	router.GET("/manifests", createManifestNamesHandler(packageStore))
@@ -38,7 +39,7 @@ func CreateRouter(packageStore store.Store, apiKey string) (http.Handler, error)
 	// - JSON data with bdm.Object array
 	// - object data
 	// The response body contains the uploaded objects as JSON array.
-	router.POST("/objects/upload", createUploadObjectsHandler(packageStore, apiKey))
+	router.POST("/objects/upload", createUploadObjectsHandler(packageStore, limits, apiKey))
 
 	// Check for existing objects. The request body contains:
 	// - 8 bytes uint for JSON data length

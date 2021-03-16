@@ -55,13 +55,24 @@ func main() {
 	remoteServer := flag.String("remote", "", "Remote package server URL for downloading packages")
 	cacheFolder := flag.String("cache", "", "Local cache folder to avoid re-downloading packages from a remote server")
 	clean := flag.Bool("clean", false, "Deletes all non-package files in the output folder in download mode and ensures that there are no non-package files in check mode.")
+	maxPathLength := flag.Int("maxpath", 0, "Maximum length of paths inside packages. Default is 0, which means unlimited.")
+	maxFileCount := flag.Int("maxfiles", 0, "Maximum bumber of files per package. Default is 0, which means unlimited.")
+	maxPackageSize := flag.Int64("maxsize", 0, "Maximum package size (sum of file sizes) in bytes. Default is 0, which means unlimited.")
+	maxFileSize := flag.Int64("maxfilesize", 0, "Maximum file size inside packages in bytes. Default is 0, which means unlimited.")
 
 	flag.Parse()
+
+	limits := bdm.ManifestLimits{
+		MaxFileSize:    *maxFileSize,
+		MaxPackageSize: *maxPackageSize,
+		MaxFilesCount:  *maxFileCount,
+		MaxPathLength:  *maxPathLength,
+	}
 
 	if *genKeyMode {
 		generateAPIKey()
 	} else if *serverMode {
-		startServer(*port, *key, *storeFolder, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
+		startServer(*port, &limits, *key, *storeFolder, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
 	} else if *validateMode {
 		validateStore(*storeFolder)
 	} else if *uploadMode {
@@ -93,7 +104,7 @@ func generateAPIKey() {
 	fmt.Println("API Key: " + apiKey)
 }
 
-func startServer(port uint, apiKey, storePath, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
+func startServer(port uint, limits *bdm.ManifestLimits, apiKey, storePath, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
 	if port == 0 || float64(port) >= math.Pow(2, 16) {
 		log.Fatal("Invalid port number")
 	}
@@ -107,7 +118,7 @@ func startServer(port uint, apiKey, storePath, certPath, keyPath, letsEncryptDom
 		log.Fatalf("Failed to open or create package store: %v", err)
 	}
 
-	router, err := server.CreateRouter(packageStore, apiKey)
+	router, err := server.CreateRouter(packageStore, limits, apiKey)
 	if err != nil {
 		log.Fatal(err)
 	}

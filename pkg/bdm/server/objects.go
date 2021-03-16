@@ -9,7 +9,7 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-func streamObjectsToStore(input io.Reader, store store.Store) ([]bdm.Object, error) {
+func streamObjectsToStore(input io.Reader, store store.Store, maxObjectSize int64) ([]bdm.Object, error) {
 	decompressedInput, err := util.CreateDecompressingReader(input)
 	if err != nil {
 		return nil, fmt.Errorf("error creating decompressing reader: %w", err)
@@ -23,6 +23,11 @@ func streamObjectsToStore(input io.Reader, store store.Store) ([]bdm.Object, err
 
 	addedObjects := make([]bdm.Object, 0)
 	for _, object := range objects {
+		if maxObjectSize > 0 && object.Size > maxObjectSize {
+			return nil, fmt.Errorf("object size of %d exceeds limit of %d",
+				object.Size, maxObjectSize)
+		}
+
 		reader, writer := io.Pipe()
 		go func() {
 			defer writer.Close()

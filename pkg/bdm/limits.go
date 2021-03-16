@@ -5,10 +5,10 @@ import "fmt"
 // ManifestLimits represents constraint for packages.
 // The dfault value zero means unlimited.
 type ManifestLimits struct {
-	MaxFileSize   int64
-	MaxSize       int64
-	MaxFilesCount int
-	MaxPathLength int
+	MaxFileSize    int64
+	MaxPackageSize int64
+	MaxFilesCount  int
+	MaxPathLength  int
 }
 
 // CheckManifestLimits can check if a manifest is within the given package limmits.
@@ -32,9 +32,9 @@ func CheckManifestLimits(manifest *Manifest, limits *ManifestLimits) error {
 		}
 	}
 
-	if limits.MaxSize > 0 && overallSize > limits.MaxSize {
+	if limits.MaxPackageSize > 0 && overallSize > limits.MaxPackageSize {
 		return fmt.Errorf("package size of %d exceeds the limit of %d",
-			overallSize, limits.MaxSize)
+			overallSize, limits.MaxPackageSize)
 	}
 
 	return nil
