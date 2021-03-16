@@ -23,6 +23,9 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, apiKey s
 	router.GET("/zip/:name/:version", createZipHandler(packageStore))
 
 	// Publish manifest for package
+	router.GET("/limits", createLimitsHandler(limits))
+
+	// Publish manifest for package
 	router.POST("/manifests", createPublishManifestHandler(packageStore, limits, apiKey))
 
 	// Get list of package names
