@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/cry-inc/bdm/pkg/bdm/store"
 	"github.com/julienschmidt/httprouter"
 )
@@ -30,7 +31,7 @@ func createCheckObjectsHandler(packageStore store.Store) httprouter.Handle {
 	}
 }
 
-func createUploadObjectsHandler(packageStore store.Store, apiKey string) httprouter.Handle {
+func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, apiKey string) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 		requestAPIKey := req.Header.Get(apiKeyField)
 		if len(requestAPIKey) == 0 || apiKey != requestAPIKey {
@@ -38,7 +39,7 @@ func createUploadObjectsHandler(packageStore store.Store, apiKey string) httprou
 			return
 		}
 
-		objects, err := streamObjectsToStore(req.Body, packageStore)
+		objects, err := streamObjectsToStore(req.Body, packageStore, limits.MaxFileSize)
 		if err != nil {
 			http.Error(writer, "Bad request", http.StatusBadRequest)
 			return

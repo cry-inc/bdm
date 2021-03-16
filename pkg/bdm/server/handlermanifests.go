@@ -113,7 +113,7 @@ func createManifestVersionsHandler(packageStore store.Store) httprouter.Handle {
 	}
 }
 
-func createPublishManifestHandler(packageStore store.Store, apiKey string) httprouter.Handle {
+func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, apiKey string) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 		requestAPIKey := req.Header.Get(apiKeyField)
 		if len(requestAPIKey) == 0 || apiKey != requestAPIKey {
@@ -137,6 +137,12 @@ func createPublishManifestHandler(packageStore store.Store, apiKey string) httpr
 		err = bdm.ValidateUnpublishedManifest(&manifest)
 		if err != nil {
 			http.Error(writer, "Bad manifest", http.StatusBadRequest)
+			return
+		}
+
+		err = bdm.CheckManifestLimits(&manifest, limits)
+		if err != nil {
+			http.Error(writer, "Manifest exceeds server limits", http.StatusBadRequest)
 			return
 		}
 
