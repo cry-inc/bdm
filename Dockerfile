@@ -21,5 +21,13 @@ ENV BDM_CERT_CACHE=/bdmcerts
 ENV BDM_HTTPS_CERT=
 ENV BDM_HTTPS_KEY=
 ENV BDM_LETS_ENCRYPT=
+ENV BDM_MAX_FILE_SIZE=0
+ENV BDM_MAX_PACKAGE_SIZE=0
+ENV BDM_MAX_FILE_COUNT=0
+ENV BDM_MAX_PATH_LENGTH=0
 
-CMD bdm -server -port=${BDM_PORT} -key=${BDM_KEY} -store=${BDM_STORE} -certcache=${BDM_CERT_CACHE} -httpscert=${BDM_HTTPS_CERT} -httpskey=${BDM_HTTPS_KEY} -letsencrypt=${BDM_LETS_ENCRYPT}
+CMD bdm -server -port=${BDM_PORT} -key=${BDM_KEY} -store=${BDM_STORE} \
+        -httpscert=${BDM_HTTPS_CERT} -httpskey=${BDM_HTTPS_KEY} \
+        -certcache=${BDM_CERT_CACHE} -letsencrypt=${BDM_LETS_ENCRYPT} \
+        -maxfilesize=${BDM_MAX_FILE_SIZE} -maxsize=${BDM_MAX_PACKAGE_SIZE} \
+        -maxpath=${BDM_MAX_PATH_LENGTH} -maxfiles=${BDM_MAX_FILE_COUNT}

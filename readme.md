@@ -46,6 +46,7 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 2. Run `docker run --rm -p 2323:2323 -e BDM_KEY=mysecret -v /host/folder:/bdmstore bdm` to start a HTTP server on the (default) port 2323 and a persistent package store on the host file system
 3. Run `docker run --rm -p 443:443 -e BDM_KEY=mysecret -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/bdmstore:/bdmstore bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
 4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_KEY=mysecret -e BDM_LETS_ENCRYPT=mydomain.com -v /host/bdmstore:/bdmstore -v /host/bdmcerts:/bdmcerts bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
+5. Check the Dockerfile for additional optional environment variables.
 
 ## Why another package server/client?
 
