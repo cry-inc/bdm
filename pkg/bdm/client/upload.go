@@ -29,6 +29,11 @@ func UploadPackage(name, inputFolder, serverURL, apiKey string) (*bdm.Manifest, 
 		return nil, fmt.Errorf("error validating generated manifest: %w", err)
 	}
 
+	err = checkRemoteManifestLimits(manifest, serverURL)
+	if err != nil {
+		return nil, fmt.Errorf("manifest failed to pass check against server limits: %w", err)
+	}
+
 	missingFiles, err := findFilesToUpload(manifest, serverURL)
 	if err != nil {
 		return nil, fmt.Errorf("error finding files to upload: %w", err)
@@ -265,4 +270,31 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiKey string) (*bdm.Man
 	}
 
 	return &publishedManifest, nil
+}
+
+func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL string) error {
+	url := serverURL + "/limits"
+	res, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("error getting limits from remote server at %s: %w", url, err)
+	}
+
+	defer res.Body.Close()
+	resData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("error reading limits response body: %w", err)
+	}
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("error getting server limits: server returned status code %d: %s",
+			res.StatusCode, resData)
+	}
+
+	var limits bdm.ManifestLimits
+	err = json.Unmarshal(resData, &limits)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling limits JSON: %w", err)
+	}
+
+	return bdm.CheckManifestLimits(manifest, &limits)
 }
