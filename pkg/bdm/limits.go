@@ -2,8 +2,8 @@ package bdm
 
 import "fmt"
 
-// ManifestLimits represents constraint for packages.
-// The dfault value zero means unlimited.
+// ManifestLimits represents constraints for packages.
+// The default value zero means disabled/unlimited.
 type ManifestLimits struct {
 	MaxFileSize    int64
 	MaxPackageSize int64
@@ -11,7 +11,7 @@ type ManifestLimits struct {
 	MaxPathLength  int
 }
 
-// CheckManifestLimits can check if a manifest is within the given package limmits.
+// CheckManifestLimits can check if a manifest is within the given package limits.
 // It will return nil if the manifest is within the limits, otherwise an error.
 func CheckManifestLimits(manifest *Manifest, limits *ManifestLimits) error {
 	if limits.MaxFilesCount > 0 && len(manifest.Files) > limits.MaxFilesCount {
