@@ -29,9 +29,9 @@ func TestInt64Helper(t *testing.T) {
 	}
 }
 
-func TestGenAPIKey(t *testing.T) {
-	key := GenAPIKey()
-	if len(key) != 64 {
-		t.Fatal(key)
+func TestGenAPIToken(t *testing.T) {
+	token := GenAPIToken()
+	if len(token) != 64 {
+		t.Fatal(token)
 	}
 }

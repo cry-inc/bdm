@@ -21,7 +21,7 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const apiKey = "1234abcd"
+const token = "1234abcd"
 const storeFolder = "test/store"
 const outputFolder = "test/output"
 const cacheFolder = "test/cache"
@@ -322,7 +322,8 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	}
 
 	limits := bdm.ManifestLimits{}
-	handler, err := server.CreateRouter(packageStore, &limits, apiKey)
+	permissions := server.SimplePermissions("", token)
+	handler, err := server.CreateRouter(packageStore, &limits, permissions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -352,7 +353,7 @@ func stopTestingServer(server *http.Server, stopped chan bool) {
 }
 
 func publishSmallTestPackage(t *testing.T) {
-	manifest, err := client.UploadPackage(packageNameSmall, packageFolderSmall, serverURL, apiKey)
+	manifest, err := client.UploadPackage(packageNameSmall, packageFolderSmall, serverURL, token)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,7 +386,7 @@ func publishBigTestPackage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	manifest, err := client.UploadPackage(packageNameBig, packageFolderBig, serverURL, apiKey)
+	manifest, err := client.UploadPackage(packageNameBig, packageFolderBig, serverURL, token)
 	if err != nil {
 		t.Fatal(err)
 	}

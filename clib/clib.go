@@ -78,13 +78,13 @@ func bdmCheckCachedPackage(packageName *C.char, cacheFolder *C.char, packageVers
 // After successful publishing the output argument version will contain the new version number assigned by the server.
 // Return value will be zero when successful.
 //export bdmUploadPackage
-func bdmUploadPackage(packageName *C.char, packageFolder *C.char, serverURL, apiKey *C.char, version *C.int) C.int {
+func bdmUploadPackage(packageName *C.char, packageFolder *C.char, serverURL, apiToken *C.char, version *C.int) C.int {
 	goPackageName := C.GoString(packageName)
 	goPackageFolder := C.GoString(packageFolder)
 	goServerURL := C.GoString(serverURL)
-	goAPIKey := C.GoString(apiKey)
+	goAPIToken := C.GoString(apiToken)
 
-	manifest, err := client.UploadPackage(goPackageName, goPackageFolder, goServerURL, goAPIKey)
+	manifest, err := client.UploadPackage(goPackageName, goPackageFolder, goServerURL, goAPIToken)
 	if err != nil {
 		return 1
 	}

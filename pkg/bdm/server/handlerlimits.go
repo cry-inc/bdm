@@ -10,8 +10,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func createLimitsHandler(limits *bdm.ManifestLimits) httprouter.Handle {
+func createLimitsHandler(limits *bdm.ManifestLimits, permissions Permissions) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		apiToken := req.Header.Get(apiTokenField)
+		if !permissions.CanRead(apiToken) {
+			http.Error(writer, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
 		jsonData, err := json.Marshal(limits)
 		if err != nil {
 			log.Print(fmt.Errorf("error marshalling limits JSON: %w", err))

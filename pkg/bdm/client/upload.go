@@ -13,11 +13,11 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const apiKeyField = "bdm-api-key"
+const apiTokenField = "bdm-api-token"
 
 // UploadPackage publishes the specified folder as package to a remote server.
 // This includes uploading of all files that doe not yet exists on the server.
-func UploadPackage(name, inputFolder, serverURL, apiKey string) (*bdm.Manifest, error) {
+func UploadPackage(name, inputFolder, serverURL, apiToken string) (*bdm.Manifest, error) {
 	manifest, err := bdm.GenerateManifest(name, inputFolder)
 	if err != nil {
 		return nil, fmt.Errorf("error generating manifest for folder %s: %w",
@@ -40,13 +40,13 @@ func UploadPackage(name, inputFolder, serverURL, apiKey string) (*bdm.Manifest, 
 	}
 
 	if len(missingFiles) > 0 {
-		err = uploadFiles(missingFiles, inputFolder, serverURL, apiKey)
+		err = uploadFiles(missingFiles, inputFolder, serverURL, apiToken)
 		if err != nil {
 			return nil, fmt.Errorf("error uploading files: %w", err)
 		}
 	}
 
-	publishedManifest, err := publishManifest(manifest, serverURL, apiKey)
+	publishedManifest, err := publishManifest(manifest, serverURL, apiToken)
 	if err != nil {
 		return nil, fmt.Errorf("error publishing manifest: %w", err)
 	}
@@ -139,7 +139,7 @@ func findFilesToUpload(manifest *bdm.Manifest, serverURL string) ([]bdm.File, er
 	return filesToUpload, nil
 }
 
-func uploadFiles(files []bdm.File, inputFolder, serverURL, apiKey string) error {
+func uploadFiles(files []bdm.File, inputFolder, serverURL, apiToken string) error {
 	r, w := io.Pipe()
 	go func() {
 		defer w.Close()
@@ -179,7 +179,7 @@ func uploadFiles(files []bdm.File, inputFolder, serverURL, apiKey string) error 
 	if err != nil {
 		return fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
-	req.Header.Add(apiKeyField, apiKey)
+	req.Header.Add(apiTokenField, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -212,7 +212,7 @@ func uploadFiles(files []bdm.File, inputFolder, serverURL, apiKey string) error 
 	return nil
 }
 
-func publishManifest(manifest *bdm.Manifest, serverURL, apiKey string) (*bdm.Manifest, error) {
+func publishManifest(manifest *bdm.Manifest, serverURL, apiToken string) (*bdm.Manifest, error) {
 	jsonData, err := json.Marshal(manifest)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling manifest to JSON: %w", err)
@@ -235,7 +235,7 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiKey string) (*bdm.Man
 	if err != nil {
 		return nil, fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
-	req.Header.Add(apiKeyField, apiKey)
+	req.Header.Add(apiTokenField, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {

@@ -11,8 +11,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func createCheckObjectsHandler(packageStore store.Store) httprouter.Handle {
+func createCheckObjectsHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+		apiToken := req.Header.Get(apiTokenField)
+		if !permissions.CanRead(apiToken) {
+			http.Error(writer, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
 		objects, err := checkStoreForObjects(req.Body, packageStore)
 		if err != nil {
 			http.Error(writer, "Bad request", http.StatusBadRequest)
@@ -31,11 +37,11 @@ func createCheckObjectsHandler(packageStore store.Store) httprouter.Handle {
 	}
 }
 
-func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, apiKey string) httprouter.Handle {
+func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-		requestAPIKey := req.Header.Get(apiKeyField)
-		if len(requestAPIKey) == 0 || apiKey != requestAPIKey {
-			http.Error(writer, "Wrong API key", http.StatusUnauthorized)
+		apiToken := req.Header.Get(apiTokenField)
+		if !permissions.CanWrite(apiToken) {
+			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
@@ -57,8 +63,14 @@ func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLi
 	}
 }
 
-func createDownloadObjectsHandler(packageStore store.Store) httprouter.Handle {
+func createDownloadObjectsHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+		apiToken := req.Header.Get(apiTokenField)
+		if !permissions.CanRead(apiToken) {
+			http.Error(writer, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
 		err := streamObjectsFromStore(req.Body, packageStore, writer)
 		if err != nil {
 			http.Error(writer, "Bad request", http.StatusBadRequest)
