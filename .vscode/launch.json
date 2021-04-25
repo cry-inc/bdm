@@ -8,7 +8,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-upload", "-package=foo", "-remote=http://127.0.0.1:2323", "-input=test/example", "-key=1234"]
+            "args": ["-upload", "-package=foo", "-remote=http://127.0.0.1:2323", "-input=test/example", "-token=1234"]
         },
         {
             "name": "Download",
@@ -35,7 +35,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-key=1234", "-store=test/store"]
+            "args": ["-server", "-writetoken=1234", "-store=test/store"]
         },
         {
             "name": "Server HTTPS",
@@ -44,7 +44,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-key=1234", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
+            "args": ["-server", "-writetoken=1234", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
         },
         {
             "name": "Validate",

@@ -25,9 +25,9 @@ func Int64ToBytes(value int64) []byte {
 	return buffer
 }
 
-// GenAPIKey generates a random secure API key
-func GenAPIKey() string {
-	key := make([]byte, 32)
-	rand.Read(key)
-	return fmt.Sprintf("%x", key)
+// GenAPIToken generates a random new API token
+func GenAPIToken() string {
+	token := make([]byte, 32)
+	rand.Read(token)
+	return fmt.Sprintf("%x", token)
 }

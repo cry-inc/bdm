@@ -15,8 +15,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func createFilesHandler(packageStore store.Store) httprouter.Handle {
+func createFilesHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
 	return func(writer http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		apiToken := req.Header.Get(apiTokenField)
+		if !permissions.CanRead(apiToken) {
+			http.Error(writer, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
 		name := params.ByName("name")
 		validName := bdm.ValidatePackageName(name)
 		if !validName {

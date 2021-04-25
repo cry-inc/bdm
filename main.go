@@ -26,7 +26,6 @@ var commitHash = "n/a"
 var buildDate = "n/a"
 
 const defaultPort = 2323
-const defaultKey = ""
 const defaultStoreFolder = "./store"
 const defaultCertCacheFolder = "./certs"
 
@@ -36,13 +35,14 @@ func main() {
 	downloadMode := flag.Bool("download", false, "Enables download mode to get remote packages")
 	serverMode := flag.Bool("server", false, "Enables server mode to run a package repository server")
 	checkMode := flag.Bool("check", false, "Enables check mode to compare local folder against an existing package")
-	genKeyMode := flag.Bool("genkey", false, "Generates a secure random API key to be used with server mode")
+	genTokenMode := flag.Bool("gentoken", false, "Generates a random new API token")
 	aboutMode := flag.Bool("about", false, "Show application version and build information")
 	validateMode := flag.Bool("validate", false, "Validates a package store to make sure all contained data is valid.")
 
 	// Application Arguments
 	port := flag.Uint("port", defaultPort, "Port for HTTP repository server")
-	key := flag.String("key", defaultKey, "Secret API key required for uploading objects and publishing manifests")
+	token := flag.String("token", "", "API token used for authorization in client mode")
+	writeToken := flag.String("writetoken", "", "API token used for write access in server mode")
 	httpsCert := flag.String("httpscert", "", "If supplied together with httpskey this will enable HTTPS")
 	httpsKey := flag.String("httpskey", "", "If supplied together with httpscert this will enable HTTPS")
 	letsEncryptDomain := flag.String("letsencrypt", "", "Domain name to enable HTTPS with automatic LE certificates. Will also start an HTTP server on port 80 that needs to be reachable from the internet.")
@@ -69,14 +69,14 @@ func main() {
 		MaxPathLength:  *maxPathLength,
 	}
 
-	if *genKeyMode {
-		generateAPIKey()
+	if *genTokenMode {
+		generateAPIToken()
 	} else if *serverMode {
-		startServer(*port, &limits, *key, *storeFolder, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
+		startServer(*port, &limits, *writeToken, *storeFolder, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
 	} else if *validateMode {
 		validateStore(*storeFolder)
 	} else if *uploadMode {
-		uploadPackage(*packageName, *inputFolder, *remoteServer, *key)
+		uploadPackage(*packageName, *inputFolder, *remoteServer, *token)
 	} else if *downloadMode {
 		downloadPackage(*packageName, *packageVersion, *outputFolder, *remoteServer, *cacheFolder, *clean)
 	} else if *checkMode {
@@ -99,18 +99,18 @@ func showAbout() {
 	fmt.Printf("  Arch:    %s\n", runtime.GOARCH)
 }
 
-func generateAPIKey() {
-	apiKey := util.GenAPIKey()
-	fmt.Println("API Key: " + apiKey)
+func generateAPIToken() {
+	apiToken := util.GenAPIToken()
+	fmt.Println("API Token: " + apiToken)
 }
 
-func startServer(port uint, limits *bdm.ManifestLimits, apiKey, storePath, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
+func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
 	if port == 0 || float64(port) >= math.Pow(2, 16) {
 		log.Fatal("Invalid port number")
 	}
 
-	if len(apiKey) == 0 {
-		log.Fatal("Missing API key")
+	if len(writeToken) == 0 {
+		log.Fatal("Missing write token")
 	}
 
 	packageStore, err := store.New(storePath)
@@ -118,35 +118,35 @@ func startServer(port uint, limits *bdm.ManifestLimits, apiKey, storePath, certP
 		log.Fatalf("Failed to open or create package store: %v", err)
 	}
 
-	router, err := server.CreateRouter(packageStore, limits, apiKey)
+	permissions := server.SimplePermissions("", writeToken)
+	router, err := server.CreateRouter(packageStore, limits, permissions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	p := uint16(port)
 	if len(letsEncryptDomain) > 0 {
-		fmt.Printf("Starting Let's Encrypt HTTPS server for domain %s on port %d and 80, cert cache folder '%s', store folder '%s' and API key '%s'\n",
-			letsEncryptDomain, port, certCacheFolder, storePath, apiKey)
+		fmt.Printf("Starting Let's Encrypt HTTPS server for domain %s on port %d and 80, cert cache folder '%s' and store folder '%s'\n",
+			letsEncryptDomain, port, certCacheFolder, storePath)
 		server.StartServerLetsEncrypt(p, letsEncryptDomain, certCacheFolder, router)
 	} else if len(certPath) > 0 && len(keyPath) > 0 {
-		fmt.Printf("Starting HTTPS server on port %d, with cert file '%s', key file '%s', store folder '%s' and API key '%s'\n",
-			port, certPath, keyPath, storePath, apiKey)
+		fmt.Printf("Starting HTTPS server on port %d, with cert file '%s', key file '%s' and store folder '%s'\n",
+			port, certPath, keyPath, storePath)
 		server.StartServerTLS(p, certPath, keyPath, router)
 	} else {
-		fmt.Printf("Starting HTTP server on port %d, store folder '%s' and API key '%s'\n",
-			port, storePath, apiKey)
+		fmt.Printf("Starting HTTP server on port %d and store folder '%s'\n", port, storePath)
 		server.StartServer(p, router)
 	}
 }
 
-func uploadPackage(packageName, inputFolder, serverURL, apiKey string) {
+func uploadPackage(packageName, inputFolder, serverURL, apiToken string) {
 	validName := bdm.ValidatePackageName(packageName)
 	if !validName {
 		log.Fatal("Invalid package name. Only lower case a-z, 0-9 and the characters - _ are allowed")
 	}
 
-	if len(apiKey) == 0 {
-		log.Fatal("Missing API key")
+	if len(apiToken) == 0 {
+		log.Fatal("Missing API token")
 	}
 
 	if len(inputFolder) == 0 {
@@ -162,7 +162,7 @@ func uploadPackage(packageName, inputFolder, serverURL, apiKey string) {
 		log.Fatal(err)
 	}
 
-	manifest, err := client.UploadPackage(packageName, inputFolder, serverURL, apiKey)
+	manifest, err := client.UploadPackage(packageName, inputFolder, serverURL, apiToken)
 	if err != nil {
 		log.Fatal(err)
 	}

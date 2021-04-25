@@ -16,7 +16,7 @@ EXPOSE 2323
 
 ENV BDM_PORT=2323
 ENV BDM_STORE=/bdmstore
-ENV BDM_KEY=
+ENV BDM_WRITE_TOKEN=
 ENV BDM_CERT_CACHE=/bdmcerts
 ENV BDM_HTTPS_CERT=
 ENV BDM_HTTPS_KEY=
@@ -26,7 +26,7 @@ ENV BDM_MAX_PACKAGE_SIZE=0
 ENV BDM_MAX_FILE_COUNT=0
 ENV BDM_MAX_PATH_LENGTH=0
 
-CMD bdm -server -port=${BDM_PORT} -key=${BDM_KEY} -store=${BDM_STORE} \
+CMD bdm -server -port=${BDM_PORT} -writetoken=${BDM_WRITE_TOKEN} -store=${BDM_STORE} \
         -httpscert=${BDM_HTTPS_CERT} -httpskey=${BDM_HTTPS_KEY} \
         -certcache=${BDM_CERT_CACHE} -letsencrypt=${BDM_LETS_ENCRYPT} \
         -maxfilesize=${BDM_MAX_FILE_SIZE} -maxsize=${BDM_MAX_PACKAGE_SIZE} \

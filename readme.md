@@ -26,9 +26,9 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 ## Quickstart
 
 1. Show version number of application: `bdm -about`
-2. Generate and print a random API key: `bdm -genkey`
-3. Start the repository server: `bdm -server -key=mykey -port=2323`
-4. Upload a new package: `bdm -upload -package="foo" -input="path/to/foo-folder/" -key=mykey -remote="http://127.0.0.1:2323"`
+2. Generate and print a new random API token: `bdm -gentoken`
+3. Start the repository server: `bdm -server -writetoken=mytoken -port=2323`
+4. Upload a new package: `bdm -upload -package="foo" -input="path/to/foo-folder/" -token=mytoken -remote="http://127.0.0.1:2323"`
 5. Download the package: `bdm -download -package="foo" -version=1 -output="where/to/put/foo/" -remote="http://127.0.0.1:2323"`
 6. Verify existing download: `bdm -check -package="foo" -version=1 -input="where/to/check/foo/" -remote="http://127.0.0.1:2323"`
 7. Open the URL `http://127.0.0.1:2323` in your browser for the web UI to inspect packages
@@ -38,14 +38,14 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 
 * Packages cannot contain empty folders, just like git repositories
 * Everybody can see and download all packages using the client or web UI
-* Uploading is restricted using a single API key for all users
+* Uploading is restricted using a single API token for all users
 
 ## Docker
 
 1. Use `docker build . -t=bdm` to build and tag the Docker image
-2. Run `docker run --rm -p 2323:2323 -e BDM_KEY=mysecret -v /host/folder:/bdmstore bdm` to start a HTTP server on the (default) port 2323 and a persistent package store on the host file system
-3. Run `docker run --rm -p 443:443 -e BDM_KEY=mysecret -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/bdmstore:/bdmstore bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
-4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_KEY=mysecret -e BDM_LETS_ENCRYPT=mydomain.com -v /host/bdmstore:/bdmstore -v /host/bdmcerts:/bdmcerts bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
+2. Run `docker run --rm -p 2323:2323 -e BDM_WRITE_TOKEN=mysecret -v /host/folder:/bdmstore bdm` to start a HTTP server on the (default) port 2323 and a persistent package store on the host file system
+3. Run `docker run --rm -p 443:443 -e BDM_WRITE_TOKEN=mysecret -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/bdmstore:/bdmstore bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
+4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_WRITE_TOKEN=mysecret -e BDM_LETS_ENCRYPT=mydomain.com -v /host/bdmstore:/bdmstore -v /host/bdmcerts:/bdmcerts bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
 5. Check the Dockerfile for additional optional environment variables.
 
 ## Why another package server/client?
