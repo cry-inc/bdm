@@ -12,12 +12,13 @@ func main() {}
 // Will remove all non-package files from the output folder of clean is set to a non-zero value.
 // Return value will be zero when successful.
 //export bdmDownloadPackage
-func bdmDownloadPackage(packageName *C.char, packageVersion C.int, outputFolder, serverURL *C.char, clean C.int) C.int {
+func bdmDownloadPackage(packageName *C.char, packageVersion C.int, outputFolder, serverURL, apiToken *C.char, clean C.int) C.int {
 	goPackageName := C.GoString(packageName)
 	goOutputFolder := C.GoString(outputFolder)
 	goServerURL := C.GoString(serverURL)
+	goAPIToken := C.GoString(apiToken)
 
-	err := client.DownloadPackage(goOutputFolder, goServerURL, goPackageName, uint(packageVersion), clean != 0)
+	err := client.DownloadPackage(goOutputFolder, goServerURL, goAPIToken, goPackageName, uint(packageVersion), clean != 0)
 	if err != nil {
 		return 1
 	}
@@ -27,13 +28,14 @@ func bdmDownloadPackage(packageName *C.char, packageVersion C.int, outputFolder,
 
 // Like bdmDownloadPackage with an additional local persistent cache in the specified cache folder.
 //export bdmDownloadCachedPackage
-func bdmDownloadCachedPackage(packageName *C.char, cacheFolder *C.char, packageVersion C.int, outputFolder, serverURL *C.char, clean C.int) C.int {
+func bdmDownloadCachedPackage(packageName *C.char, cacheFolder *C.char, packageVersion C.int, outputFolder, serverURL, apiToken *C.char, clean C.int) C.int {
 	goPackageName := C.GoString(packageName)
 	goOutputFolder := C.GoString(outputFolder)
 	goCacheFolder := C.GoString(cacheFolder)
 	goServerURL := C.GoString(serverURL)
+	goAPIToken := C.GoString(apiToken)
 
-	err := client.DownloadCachedPackage(goOutputFolder, goCacheFolder, goServerURL, goPackageName, uint(packageVersion), clean != 0)
+	err := client.DownloadCachedPackage(goOutputFolder, goCacheFolder, goServerURL, goAPIToken, goPackageName, uint(packageVersion), clean != 0)
 	if err != nil {
 		return 1
 	}
@@ -45,12 +47,13 @@ func bdmDownloadCachedPackage(packageName *C.char, cacheFolder *C.char, packageV
 // Will report errors for any non-package files in the folder in case clean is non-zero.
 // Return value will be zero when successful.
 //export bdmCheckPackage
-func bdmCheckPackage(packageName *C.char, packageVersion C.int, packageFolder, serverURL *C.char, clean C.int) C.int {
+func bdmCheckPackage(packageName *C.char, packageVersion C.int, packageFolder, serverURL, apiToken *C.char, clean C.int) C.int {
 	goPackageName := C.GoString(packageName)
 	goPackageFolder := C.GoString(packageFolder)
 	goServerURL := C.GoString(serverURL)
+	goAPIToken := C.GoString(apiToken)
 
-	err := client.CheckPackage(goPackageFolder, goServerURL, goPackageName, uint(packageVersion), clean != 0)
+	err := client.CheckPackage(goPackageFolder, goServerURL, goAPIToken, goPackageName, uint(packageVersion), clean != 0)
 	if err != nil {
 		return 1
 	}
@@ -60,13 +63,14 @@ func bdmCheckPackage(packageName *C.char, packageVersion C.int, packageFolder, s
 
 // Like bdmCheckPackage with an additional local persistent cache in the specified cache folder.
 //export bdmCheckCachedPackage
-func bdmCheckCachedPackage(packageName *C.char, cacheFolder *C.char, packageVersion C.int, packageFolder, serverURL *C.char, clean C.int) C.int {
+func bdmCheckCachedPackage(packageName *C.char, cacheFolder *C.char, packageVersion C.int, packageFolder, serverURL, apiToken *C.char, clean C.int) C.int {
 	goPackageName := C.GoString(packageName)
 	goPackageFolder := C.GoString(packageFolder)
 	goCacheFolder := C.GoString(cacheFolder)
 	goServerURL := C.GoString(serverURL)
+	goAPIToken := C.GoString(apiToken)
 
-	err := client.CheckCachedPackage(goPackageFolder, goCacheFolder, goServerURL, goPackageName, uint(packageVersion), clean != 0)
+	err := client.CheckCachedPackage(goPackageFolder, goCacheFolder, goServerURL, goAPIToken, goPackageName, uint(packageVersion), clean != 0)
 	if err != nil {
 		return 1
 	}

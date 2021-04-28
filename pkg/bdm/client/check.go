@@ -11,8 +11,8 @@ import (
 )
 
 // CheckPackage will check an existing loack package folder against the manifest
-func CheckPackage(packageFolder, serverURL, name string, version uint, clean bool) error {
-	manifest, err := DownloadManifest(serverURL, name, version)
+func CheckPackage(packageFolder, serverURL, apiToken, name string, version uint, clean bool) error {
+	manifest, err := DownloadManifest(serverURL, apiToken, name, version)
 	if err != nil {
 		return fmt.Errorf("error downloading manifest: %w", err)
 	}
@@ -21,8 +21,8 @@ func CheckPackage(packageFolder, serverURL, name string, version uint, clean boo
 }
 
 // CheckCachedPackage is like CheckPackage but with an additional local cache
-func CheckCachedPackage(packageFolder, cacheFolder, serverURL, name string, version uint, clean bool) error {
-	manifest, err := DownloadCachedManifest(cacheFolder, serverURL, name, version)
+func CheckCachedPackage(packageFolder, cacheFolder, serverURL, apiToken, name string, version uint, clean bool) error {
+	manifest, err := DownloadCachedManifest(cacheFolder, serverURL, apiToken, name, version)
 	if err != nil {
 		return fmt.Errorf("error downloading cached manifest: %w", err)
 	}

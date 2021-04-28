@@ -21,7 +21,8 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const token = "1234abcd"
+const readToken = ""
+const writeToken = "1234write"
 const storeFolder = "test/store"
 const outputFolder = "test/output"
 const cacheFolder = "test/cache"
@@ -45,13 +46,13 @@ func TestServerClient(t *testing.T) {
 	publishSmallTestPackage(t)
 
 	// Download a small test package
-	err := client.DownloadPackage(outputFolder, serverURL, packageNameSmall, 1, false)
+	err := client.DownloadPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, false)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Check package content
-	err = client.CheckPackage(outputFolder, serverURL, packageNameSmall, 1, true)
+	err = client.CheckPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +60,7 @@ func TestServerClient(t *testing.T) {
 	// Create dirty file and download again with clean mode enabled
 	const dirtyFile = outputFolder + "/dirty.dat"
 	ioutil.WriteFile(dirtyFile, []byte{0, 1, 2}, os.ModePerm)
-	err = client.DownloadPackage(outputFolder, serverURL, packageNameSmall, 1, true)
+	err = client.DownloadPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +70,7 @@ func TestServerClient(t *testing.T) {
 
 	// Download again with caching enabled
 	os.RemoveAll(outputFolder)
-	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, packageNameSmall, 1, false)
+	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,13 +80,13 @@ func TestServerClient(t *testing.T) {
 
 	// Try to restore package from cache only
 	os.RemoveAll(outputFolder)
-	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, packageNameSmall, 1, true)
+	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Check using the cache only
-	err = client.CheckCachedPackage(outputFolder, cacheFolder, serverURL, packageNameSmall, 1, true)
+	err = client.CheckCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -322,7 +323,7 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	}
 
 	limits := bdm.ManifestLimits{}
-	permissions := server.SimplePermissions("", token)
+	permissions := server.SimplePermissions(readToken, writeToken)
 	handler, err := server.CreateRouter(packageStore, &limits, permissions)
 	if err != nil {
 		t.Fatal(err)
@@ -353,7 +354,7 @@ func stopTestingServer(server *http.Server, stopped chan bool) {
 }
 
 func publishSmallTestPackage(t *testing.T) {
-	manifest, err := client.UploadPackage(packageNameSmall, packageFolderSmall, serverURL, token)
+	manifest, err := client.UploadPackage(packageNameSmall, packageFolderSmall, serverURL, writeToken)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -386,7 +387,7 @@ func publishBigTestPackage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	manifest, err := client.UploadPackage(packageNameBig, packageFolderBig, serverURL, token)
+	manifest, err := client.UploadPackage(packageNameBig, packageFolderBig, serverURL, writeToken)
 	if err != nil {
 		t.Fatal(err)
 	}
