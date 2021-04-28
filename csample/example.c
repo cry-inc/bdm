@@ -6,10 +6,11 @@ int main() {
 	char* packageName = "foo";
 	char* outputFolder = ".\\out";
 	char* serverURL = "http://127.0.0.1:2323";
+	char *apiToken = "";
 	int packageVersion = 2;
 	int clean = 1;
 
-	int result = bdmDownloadPackage(packageName, packageVersion, outputFolder, serverURL, clean);
+	int result = bdmDownloadPackage(packageName, packageVersion, outputFolder, serverURL, apiToken, clean);
 	
 	printf("bdmDownloadPackage returned %d\n", result);
 	return 0;
