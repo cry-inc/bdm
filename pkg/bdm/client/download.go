@@ -15,13 +15,13 @@ import (
 )
 
 // DownloadPackage downloads a package from a remote server to a local folder
-func DownloadPackage(outputFolder, serverURL, name string, version uint, clean bool) error {
-	manifest, err := DownloadManifest(serverURL, name, version)
+func DownloadPackage(outputFolder, serverURL, apiToken, name string, version uint, clean bool) error {
+	manifest, err := DownloadManifest(serverURL, apiToken, name, version)
 	if err != nil {
 		return fmt.Errorf("error downloading manifest: %w", err)
 	}
 
-	err = DownloadFiles(serverURL, manifest, outputFolder)
+	err = DownloadFiles(serverURL, apiToken, manifest, outputFolder)
 	if err != nil {
 		return fmt.Errorf("error downloading files: %w", err)
 	}
@@ -37,13 +37,13 @@ func DownloadPackage(outputFolder, serverURL, name string, version uint, clean b
 }
 
 // DownloadCachedPackage is like DownloadPackage with an additional local cache
-func DownloadCachedPackage(outputFolder, cacheFolder, serverURL, name string, version uint, clean bool) error {
-	manifest, err := DownloadCachedManifest(cacheFolder, serverURL, name, version)
+func DownloadCachedPackage(outputFolder, cacheFolder, serverURL, apiToken, name string, version uint, clean bool) error {
+	manifest, err := DownloadCachedManifest(cacheFolder, serverURL, apiToken, name, version)
 	if err != nil {
 		return fmt.Errorf("error downloading cached manifest: %w", err)
 	}
 
-	err = DownloadCachedFiles(cacheFolder, serverURL, manifest, outputFolder)
+	err = DownloadCachedFiles(cacheFolder, serverURL, apiToken, manifest, outputFolder)
 	if err != nil {
 		return fmt.Errorf("error downloading cached files: %w", err)
 	}
@@ -59,9 +59,16 @@ func DownloadCachedPackage(outputFolder, cacheFolder, serverURL, name string, ve
 }
 
 // DownloadManifest fetches the specified package manifest from a server
-func DownloadManifest(serverURL, name string, version uint) (*bdm.Manifest, error) {
+func DownloadManifest(serverURL, apiToken, name string, version uint) (*bdm.Manifest, error) {
 	url := fmt.Sprintf("%s/manifests/%s/%d", serverURL, name, version)
-	res, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating GET request for URL %s: %w", url, err)
+	}
+
+	req.Header.Add(apiTokenField, apiToken)
+	client := &http.Client{}
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error getting URL %s: %w", url, err)
 	}
@@ -92,7 +99,7 @@ func DownloadManifest(serverURL, name string, version uint) (*bdm.Manifest, erro
 }
 
 // DownloadCachedManifest is DownloadManifest with an additional integrated cache
-func DownloadCachedManifest(cacheFolder, serverURL, name string, version uint) (*bdm.Manifest, error) {
+func DownloadCachedManifest(cacheFolder, serverURL, apiToken, name string, version uint) (*bdm.Manifest, error) {
 	store, err := store.New(cacheFolder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open cache store at location %s: %w", cacheFolder, err)
@@ -104,7 +111,7 @@ func DownloadCachedManifest(cacheFolder, serverURL, name string, version uint) (
 		return manifest, nil
 	}
 
-	manifest, err = DownloadManifest(serverURL, name, version)
+	manifest, err = DownloadManifest(serverURL, apiToken, name, version)
 	if err != nil {
 		return nil, fmt.Errorf("error downloading manifest: %w", err)
 	}
@@ -230,7 +237,7 @@ func copyFile(source, target, hash string) error {
 
 // DownloadFiles downloads all all files from a manifest to a output folder.
 // It skips all files that already exists in the folder with the correct size and hash.
-func DownloadFiles(serverURL string, manifest *bdm.Manifest, outputFolder string) error {
+func DownloadFiles(serverURL, apiToken string, manifest *bdm.Manifest, outputFolder string) error {
 	missingFiles := getMissingFiles(manifest, outputFolder)
 
 	if len(missingFiles) == 0 {
@@ -261,6 +268,8 @@ func DownloadFiles(serverURL string, manifest *bdm.Manifest, outputFolder string
 	if err != nil {
 		return fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
+
+	req.Header.Add(apiTokenField, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -304,7 +313,7 @@ func DownloadFiles(serverURL string, manifest *bdm.Manifest, outputFolder string
 }
 
 // DownloadCachedFiles is DownloadFiles with an integrated cache
-func DownloadCachedFiles(cacheFolder, serverURL string, manifest *bdm.Manifest, outputFolder string) error {
+func DownloadCachedFiles(cacheFolder, serverURL, apiToken string, manifest *bdm.Manifest, outputFolder string) error {
 	cache, err := store.New(cacheFolder)
 	if err != nil {
 		return fmt.Errorf("failed to open cache store at location %s: %w", cacheFolder, err)
@@ -315,7 +324,7 @@ func DownloadCachedFiles(cacheFolder, serverURL string, manifest *bdm.Manifest, 
 		return fmt.Errorf("error restoring files from cache: %w", err)
 	}
 
-	err = DownloadFiles(serverURL, manifest, outputFolder)
+	err = DownloadFiles(serverURL, apiToken, manifest, outputFolder)
 	if err != nil {
 		return fmt.Errorf("error downloading files: %w", err)
 	}

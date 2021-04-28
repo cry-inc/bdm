@@ -78,9 +78,9 @@ func main() {
 	} else if *uploadMode {
 		uploadPackage(*packageName, *inputFolder, *remoteServer, *token)
 	} else if *downloadMode {
-		downloadPackage(*packageName, *packageVersion, *outputFolder, *remoteServer, *cacheFolder, *clean)
+		downloadPackage(*packageName, *packageVersion, *outputFolder, *remoteServer, *token, *cacheFolder, *clean)
 	} else if *checkMode {
-		checkPackage(*packageName, *packageVersion, *inputFolder, *cacheFolder, *remoteServer, *clean)
+		checkPackage(*packageName, *packageVersion, *inputFolder, *cacheFolder, *remoteServer, *token, *clean)
 	} else if *aboutMode {
 		showAbout()
 	} else {
@@ -170,7 +170,7 @@ func uploadPackage(packageName, inputFolder, serverURL, apiToken string) {
 	fmt.Printf("Package %s was successfully published in version %d", manifest.PackageName, manifest.PackageVersion)
 }
 
-func downloadPackage(packageName string, packageVersion uint, outputFolder, serverURL, cacheFolder string, clean bool) {
+func downloadPackage(packageName string, packageVersion uint, outputFolder, serverURL, apiToken, cacheFolder string, clean bool) {
 	if len(packageName) == 0 {
 		log.Fatal("Missing package name")
 	}
@@ -189,19 +189,19 @@ func downloadPackage(packageName string, packageVersion uint, outputFolder, serv
 	}
 
 	if len(cacheFolder) > 0 {
-		err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, packageName, packageVersion, clean)
+		err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err = client.DownloadPackage(outputFolder, serverURL, packageName, packageVersion, clean)
+		err = client.DownloadPackage(outputFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
-func checkPackage(packageName string, packageVersion uint, checkFolder, cacheFolder, serverURL string, clean bool) {
+func checkPackage(packageName string, packageVersion uint, checkFolder, cacheFolder, serverURL, apiToken string, clean bool) {
 	if len(packageName) == 0 {
 		log.Fatal("Missing package name")
 	}
@@ -216,12 +216,12 @@ func checkPackage(packageName string, packageVersion uint, checkFolder, cacheFol
 	}
 
 	if len(cacheFolder) > 0 {
-		err = client.CheckCachedPackage(checkFolder, cacheFolder, serverURL, packageName, packageVersion, clean)
+		err = client.CheckCachedPackage(checkFolder, cacheFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err = client.CheckPackage(checkFolder, serverURL, packageName, packageVersion, clean)
+		err = client.CheckPackage(checkFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
 			log.Fatal(err)
 		}

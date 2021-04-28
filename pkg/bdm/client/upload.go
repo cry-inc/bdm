@@ -13,8 +13,6 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const apiTokenField = "bdm-api-token"
-
 // UploadPackage publishes the specified folder as package to a remote server.
 // This includes uploading of all files that doe not yet exists on the server.
 func UploadPackage(name, inputFolder, serverURL, apiToken string) (*bdm.Manifest, error) {
@@ -29,12 +27,12 @@ func UploadPackage(name, inputFolder, serverURL, apiToken string) (*bdm.Manifest
 		return nil, fmt.Errorf("error validating generated manifest: %w", err)
 	}
 
-	err = checkRemoteManifestLimits(manifest, serverURL)
+	err = checkRemoteManifestLimits(manifest, serverURL, apiToken)
 	if err != nil {
 		return nil, fmt.Errorf("manifest failed to pass check against server limits: %w", err)
 	}
 
-	missingFiles, err := findFilesToUpload(manifest, serverURL)
+	missingFiles, err := findFilesToUpload(manifest, serverURL, apiToken)
 	if err != nil {
 		return nil, fmt.Errorf("error finding files to upload: %w", err)
 	}
@@ -74,7 +72,7 @@ func filterDuplicateFileObjects(files []bdm.File) []bdm.File {
 	return filtered
 }
 
-func findFilesToUpload(manifest *bdm.Manifest, serverURL string) ([]bdm.File, error) {
+func findFilesToUpload(manifest *bdm.Manifest, serverURL, apiToken string) ([]bdm.File, error) {
 	objects := getObjects(manifest.Files)
 
 	r, w := io.Pipe()
@@ -96,6 +94,8 @@ func findFilesToUpload(manifest *bdm.Manifest, serverURL string) ([]bdm.File, er
 	if err != nil {
 		return nil, fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
+
+	req.Header.Add(apiTokenField, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -272,9 +272,16 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiToken string) (*bdm.M
 	return &publishedManifest, nil
 }
 
-func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL string) error {
+func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL, apiToken string) error {
 	url := serverURL + "/limits"
-	res, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("error creating GET request for URL %s: %w", url, err)
+	}
+
+	req.Header.Add(apiTokenField, apiToken)
+	client := &http.Client{}
+	res, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error getting limits from remote server at %s: %w", url, err)
 	}
