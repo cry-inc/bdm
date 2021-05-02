@@ -12,7 +12,7 @@ const newPw = "newsecretpw"
 
 func TestJsonUserDatabase(t *testing.T) {
 	// Create new database
-	db, err := CreateJsonUserDb(dbFile)
+	db, err := CreateJsonUserDatabase(dbFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,6 +63,9 @@ func TestJsonUserDatabase(t *testing.T) {
 
 	// Check if validation is possible
 	if !db.Authenticate(userName, userPw) {
+		t.Fatal()
+	}
+	if db.Authenticate(userName, "wrongpw") {
 		t.Fatal()
 	}
 
