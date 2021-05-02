@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/cry-inc/bdm/pkg/bdm/util"
@@ -31,6 +32,8 @@ type Store interface {
 type packageStore struct {
 	manifestsFolder string
 	objectsFolder   string
+	objectsMutex    sync.Mutex
+	manifestsMutex  sync.RWMutex
 }
 
 const manifestsSubFolder = "manifests"
@@ -64,7 +67,7 @@ func New(storeFolder string) (Store, error) {
 		}
 	}
 
-	return store, nil
+	return &store, nil
 }
 
 // AllObjectsExist can verify that all objects from the manifest exist in the store

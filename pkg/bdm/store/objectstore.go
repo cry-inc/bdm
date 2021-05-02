@@ -8,15 +8,12 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
 
 	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 const sizeSuffix = "_size"
-
-var objectsMutex sync.Mutex
 
 func getObjectPath(hash string) string {
 	if len(hash) <= 2 {
@@ -28,7 +25,7 @@ func getObjectPath(hash string) string {
 	return path.Join(folder, file)
 }
 
-func (s packageStore) GetObject(hash string) (*bdm.Object, error) {
+func (s *packageStore) GetObject(hash string) (*bdm.Object, error) {
 	objectPath := getObjectPath(hash)
 	filePath := path.Join(s.objectsFolder, objectPath)
 	if !util.FileExists(filePath) {
@@ -53,7 +50,7 @@ func (s packageStore) GetObject(hash string) (*bdm.Object, error) {
 	}, nil
 }
 
-func (s packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
+func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 	fileHandle, err := ioutil.TempFile(s.objectsFolder, "tmp_*")
 	if err != nil {
 		return nil, fmt.Errorf("error opening temporary object file: %w", err)
@@ -81,8 +78,8 @@ func (s packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 	fileHandle.Close()
 
 	{
-		objectsMutex.Lock()
-		defer objectsMutex.Unlock()
+		s.objectsMutex.Lock()
+		defer s.objectsMutex.Unlock()
 
 		object, _ := s.GetObject(hash)
 		if object != nil {
@@ -123,7 +120,7 @@ func (s packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 	return &object, nil
 }
 
-func (s packageStore) ReadObject(hash string) (io.ReadCloser, error) {
+func (s *packageStore) ReadObject(hash string) (io.ReadCloser, error) {
 	objectPath := getObjectPath(hash)
 	filePath := path.Join(s.objectsFolder, objectPath)
 	fileHandle, err := os.Open(filePath)
@@ -151,7 +148,7 @@ func (s packageStore) ReadObject(hash string) (io.ReadCloser, error) {
 	return reader, nil
 }
 
-func (s packageStore) GetObjects() ([]*bdm.Object, error) {
+func (s *packageStore) GetObjects() ([]*bdm.Object, error) {
 	if !util.FolderExists(s.objectsFolder) {
 		return nil, fmt.Errorf("objects store folder %s does not exist",
 			s.objectsFolder)

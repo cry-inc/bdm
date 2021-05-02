@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/cry-inc/bdm/pkg/bdm"
@@ -16,10 +15,8 @@ import (
 
 const manifestFileName = "manifest.json"
 
-var manifestsMutex sync.RWMutex
-
 // Call this method only if you have already locked the manifestsMutex exclusively!
-func (s packageStore) addManifestLocked(manifest *bdm.Manifest) error {
+func (s *packageStore) addManifestLocked(manifest *bdm.Manifest) error {
 	err := bdm.ValidatePublishedManifest(manifest)
 	if err != nil {
 		return fmt.Errorf("error validating published manifest: %w", err)
@@ -61,7 +58,7 @@ func (s packageStore) addManifestLocked(manifest *bdm.Manifest) error {
 	return nil
 }
 
-func (s packageStore) searchDuplicate(manifest *bdm.Manifest) error {
+func (s *packageStore) searchDuplicate(manifest *bdm.Manifest) error {
 	existingVersions, err := s.GetVersions(manifest.PackageName)
 	if err != nil {
 		return fmt.Errorf("error getting versions for package %s: %w",
@@ -105,14 +102,14 @@ func (s packageStore) searchDuplicate(manifest *bdm.Manifest) error {
 	return nil
 }
 
-func (s packageStore) AddManifest(manifest *bdm.Manifest) error {
-	manifestsMutex.Lock()
-	defer manifestsMutex.Unlock()
+func (s *packageStore) AddManifest(manifest *bdm.Manifest) error {
+	s.manifestsMutex.Lock()
+	defer s.manifestsMutex.Unlock()
 
 	return s.addManifestLocked(manifest)
 }
 
-func (s packageStore) PublishManifest(manifest *bdm.Manifest) error {
+func (s *packageStore) PublishManifest(manifest *bdm.Manifest) error {
 	err := bdm.ValidateUnpublishedManifest(manifest)
 	if err != nil {
 		return fmt.Errorf("error validating unpublished manifest: %w", err)
@@ -123,8 +120,8 @@ func (s packageStore) PublishManifest(manifest *bdm.Manifest) error {
 		return fmt.Errorf("error searching for duplicate package: %w", err)
 	}
 
-	manifestsMutex.Lock()
-	defer manifestsMutex.Unlock()
+	s.manifestsMutex.Lock()
+	defer s.manifestsMutex.Unlock()
 
 	var newVersion uint = 1
 	existingVersions, err := s.GetVersions(manifest.PackageName)
@@ -149,13 +146,13 @@ func (s packageStore) PublishManifest(manifest *bdm.Manifest) error {
 	return s.addManifestLocked(manifest)
 }
 
-func (s packageStore) GetManifest(packageName string, version uint) (*bdm.Manifest, error) {
+func (s *packageStore) GetManifest(packageName string, version uint) (*bdm.Manifest, error) {
 	if !util.FolderExists(s.manifestsFolder) {
 		return nil, fmt.Errorf("manifest store folder does not exist")
 	}
 
-	manifestsMutex.RLock()
-	defer manifestsMutex.RUnlock()
+	s.manifestsMutex.RLock()
+	defer s.manifestsMutex.RUnlock()
 
 	packageFolder := path.Join(s.manifestsFolder, packageName)
 	if !util.FolderExists(packageFolder) {
@@ -183,7 +180,7 @@ func (s packageStore) GetManifest(packageName string, version uint) (*bdm.Manife
 	return &manifest, nil
 }
 
-func (s packageStore) GetNames() ([]string, error) {
+func (s *packageStore) GetNames() ([]string, error) {
 	if !util.FolderExists(s.manifestsFolder) {
 		return nil, fmt.Errorf("manifest store folder does not exist")
 	}
@@ -204,7 +201,7 @@ func (s packageStore) GetNames() ([]string, error) {
 	return names, nil
 }
 
-func (s packageStore) GetVersions(packageName string) ([]uint, error) {
+func (s *packageStore) GetVersions(packageName string) ([]uint, error) {
 	if !util.FolderExists(s.manifestsFolder) {
 		return nil, fmt.Errorf("manifest store folder does not exist")
 	}
