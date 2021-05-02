@@ -24,7 +24,7 @@
             "command": "go build"
         },
         {
-            "label": "build clib",
+            "label": "build c lib",
             "type": "shell",
             "group": "build",
             "presentation": {
@@ -50,7 +50,7 @@
             "command": "gcc -o example.exe example.c ../clib/bdm.lib"
         },
         {
-            "label": "collect_coverage",
+            "label": "collect coverage",
             "type": "shell",
             "group": "none",
             "command": "go",
@@ -62,7 +62,7 @@
             ]
         },
         {
-            "label": "show_coverage",
+            "label": "show coverage",
             "type": "shell",
             "group": "none",
             "command": "go tool cover -html=coverage"
@@ -70,7 +70,7 @@
         {
           "label": "coverage",
           "dependsOrder": "sequence",
-          "dependsOn": ["collect_coverage", "show_coverage"]
+          "dependsOn": ["collect coverage", "show coverage"]
         },
         {
             "label": "gocyclo",
@@ -83,6 +83,11 @@
             "type": "shell",
             "group": "none",
             "command": "staticcheck github.com/cry-inc/bdm/..."
+        },
+        {
+          "label": "full build & test",
+          "dependsOrder": "sequence",
+          "dependsOn": ["build", "test", "build c lib", "build c example"]
         }
     ]
 }
