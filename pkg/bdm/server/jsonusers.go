@@ -225,3 +225,32 @@ func (db *JsonUsersDatabase) Authenticate(id, password string) bool {
 	err = bcrypt.CompareHashAndPassword(hash, saltedPw)
 	return err == nil
 }
+
+func (db *JsonUsersDatabase) ChangePassword(id, password string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
+	users, err := db.loadUsers()
+	if err != nil {
+		return fmt.Errorf("unable to load JSON user database: %w", err)
+	}
+
+	for i := range users {
+		if users[i].Id == id {
+			saltedPw := []byte(users[i].Salt + password)
+			hashBytes, err := bcrypt.GenerateFromPassword(saltedPw, bcrypt.DefaultCost)
+			if err != nil {
+				return fmt.Errorf("unable to generate password hash: %w", err)
+			}
+
+			users[i].Hash = fmt.Sprintf("%x", hashBytes)
+			err = db.saveUsers(users)
+			if err != nil {
+				return fmt.Errorf("unable to save JSON user database: %w", err)
+			}
+			return nil
+		}
+	}
+
+	return fmt.Errorf("unable to find user %s in database", id)
+}
