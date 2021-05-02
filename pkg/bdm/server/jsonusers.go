@@ -19,67 +19,72 @@ type JsonUser struct {
 	Hash string
 }
 
-type JsonUsersDatabase struct {
-	jsonFilePath string
-	mutex        sync.Mutex
+type JsonUserDatabase struct {
+	usersFile string
+	users     map[string]JsonUser
+	mutex     sync.Mutex
 }
 
-func CreateJsonUserDb(dbfilePath string) (Users, error) {
-	if !util.FileExists(dbfilePath) {
-		data := []byte("[]")
-		err := ioutil.WriteFile(dbfilePath, data, os.ModePerm)
+func CreateJsonUserDatabase(dbfilePath string) (Users, error) {
+	db := JsonUserDatabase{
+		usersFile: dbfilePath,
+		users:     make(map[string]JsonUser),
+	}
+
+	if !util.FileExists(db.usersFile) {
+		err := db.saveUsers()
 		if err != nil {
 			return nil, fmt.Errorf("unable to create user database file %s: %w", dbfilePath, err)
 		}
 	}
-	db := JsonUsersDatabase{jsonFilePath: dbfilePath}
+
+	err := db.loadUsers()
+	if err != nil {
+		return nil, fmt.Errorf("unable to load user database: %w", err)
+	}
+
 	return &db, nil
 }
 
-func (db *JsonUsersDatabase) loadUsers() ([]JsonUser, error) {
-	jsonData, err := ioutil.ReadFile(db.jsonFilePath)
+func (db *JsonUserDatabase) loadUsers() error {
+	jsonData, err := ioutil.ReadFile(db.usersFile)
 	if err != nil {
-		return nil, fmt.Errorf("error reading user database file %s: %w", db.jsonFilePath, err)
+		return fmt.Errorf("error reading user database file %s: %w", db.usersFile, err)
 	}
 
-	var jsonUsers []JsonUser
-	err = json.Unmarshal(jsonData, &jsonUsers)
+	var users []JsonUser
+	err = json.Unmarshal(jsonData, &users)
 	if err != nil {
-		return nil, fmt.Errorf("error to unmarshal user database: %w", err)
+		return fmt.Errorf("error to unmarshal user database: %w", err)
 	}
 
-	return jsonUsers, nil
-}
-
-func (db *JsonUsersDatabase) saveUsers(users []JsonUser) error {
-	jsonData, err := json.Marshal(users)
-	if err != nil {
-		return fmt.Errorf("unable to marshal user database to JSON: %w", err)
-	}
-
-	err = ioutil.WriteFile(db.jsonFilePath, jsonData, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("unable to write user database to file %s: %w",
-			db.jsonFilePath, err)
+	db.users = make(map[string]JsonUser)
+	for _, u := range users {
+		db.users[u.Id] = u
 	}
 
 	return nil
 }
 
-func (db *JsonUsersDatabase) findUser(id string) (*JsonUser, error) {
-	users, err := db.loadUsers()
+func (db *JsonUserDatabase) saveUsers() error {
+	users := make([]JsonUser, 0)
+
+	for _, u := range db.users {
+		users = append(users, u)
+	}
+
+	jsonData, err := json.Marshal(users)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load JSON user database: %w", err)
+		return fmt.Errorf("unable to marshal user database to JSON: %w", err)
 	}
 
-	var user *JsonUser = nil
-	for _, u := range users {
-		if u.Id == id {
-			user = &u
-		}
+	err = ioutil.WriteFile(db.usersFile, jsonData, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("unable to write user database to file %s: %w",
+			db.usersFile, err)
 	}
 
-	return user, nil
+	return nil
 }
 
 func generateSalt() string {
@@ -91,37 +96,25 @@ func generateSalt() string {
 	return fmt.Sprintf("%x", salt)
 }
 
-func (db *JsonUsersDatabase) ListUsers() ([]User, error) {
+func (db *JsonUserDatabase) ListUsers() ([]User, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	jsonUsers, err := db.loadUsers()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load user database: %w", err)
-	}
-
 	var users []User
-	for _, u := range jsonUsers {
+	for _, u := range db.users {
 		users = append(users, u.User)
 	}
 
 	return users, nil
 }
 
-func (db *JsonUsersDatabase) CreateUser(user User, password string) error {
+func (db *JsonUserDatabase) CreateUser(user User, password string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	users, err := db.loadUsers()
-	if err != nil {
-		return fmt.Errorf("unable to load existing user database: %w", err)
-	}
-
 	// Check for duplicate user ID
-	for _, u := range users {
-		if u.Id == user.Id {
-			return fmt.Errorf("user ID exists already in database")
-		}
+	if _, found := db.users[user.Id]; found {
+		return fmt.Errorf("user ID exists already in database")
 	}
 
 	salt := generateSalt()
@@ -132,15 +125,13 @@ func (db *JsonUsersDatabase) CreateUser(user User, password string) error {
 	}
 
 	hexHash := fmt.Sprintf("%x", hashBytes)
-	jsonUser := JsonUser{
+	db.users[user.Id] = JsonUser{
 		User: user,
 		Salt: salt,
 		Hash: hexHash,
 	}
 
-	users = append(users, jsonUser)
-
-	err = db.saveUsers(users)
+	err = db.saveUsers()
 	if err != nil {
 		return fmt.Errorf("unable to save user database: %w", err)
 	}
@@ -148,109 +139,93 @@ func (db *JsonUsersDatabase) CreateUser(user User, password string) error {
 	return nil
 }
 
-func (db *JsonUsersDatabase) DeleteUser(id string) error {
+func (db *JsonUserDatabase) DeleteUser(id string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	users, err := db.loadUsers()
+	if _, found := db.users[id]; !found {
+		return fmt.Errorf("user with ID %s does not exist in database", id)
+	}
+
+	delete(db.users, id)
+	err := db.saveUsers()
 	if err != nil {
-		return fmt.Errorf("unable to load JSON user database: %w", err)
+		return fmt.Errorf("unable to save user database: %w", err)
 	}
 
-	cleanUsers := make([]JsonUser, 0)
-	for _, u := range users {
-		if u.Id != id {
-			cleanUsers = append(cleanUsers, u)
-		}
-	}
-
-	if len(cleanUsers) != len(users)-1 {
-		return fmt.Errorf("unable to find user %s in database", id)
-	}
-
-	db.saveUsers(cleanUsers)
 	return nil
 }
 
-func (db *JsonUsersDatabase) SetRoles(id string, roles *Roles) error {
+func (db *JsonUserDatabase) SetRoles(id string, roles *Roles) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	users, err := db.loadUsers()
+	if _, found := db.users[id]; !found {
+		return fmt.Errorf("user with ID %s does not exist in database", id)
+	}
+
+	user := db.users[id]
+	user.Roles = *roles
+	db.users[id] = user
+	err := db.saveUsers()
 	if err != nil {
-		return fmt.Errorf("unable to load JSON user database: %w", err)
+		return fmt.Errorf("unable to save JSON user database: %w", err)
 	}
 
-	for i := range users {
-		if users[i].Id == id {
-			users[i].Roles = *roles
-			err = db.saveUsers(users)
-			if err != nil {
-				return fmt.Errorf("unable to save JSON user database: %w", err)
-			}
-			return nil
-		}
-	}
-
-	return fmt.Errorf("unable to find user %s in database", id)
+	return nil
 }
 
-func (db *JsonUsersDatabase) GetRoles(id string) (*Roles, error) {
+func (db *JsonUserDatabase) GetRoles(id string) (*Roles, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	user, err := db.findUser(id)
-	if err != nil {
-		return nil, fmt.Errorf("unable to find user: %w", err)
+	if _, found := db.users[id]; !found {
+		return nil, fmt.Errorf("user with ID %s does not exist in database", id)
 	}
 
-	return &user.Roles, nil
+	roles := db.users[id].Roles
+	return &roles, nil
 }
 
-func (db *JsonUsersDatabase) Authenticate(id, password string) bool {
+func (db *JsonUserDatabase) Authenticate(id, password string) bool {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	user, err := db.findUser(id)
+	if _, found := db.users[id]; !found {
+		return false
+	}
+
+	hash, err := hex.DecodeString(db.users[id].Hash)
 	if err != nil {
 		return false
 	}
 
-	hash, err := hex.DecodeString(user.Hash)
-	if err != nil {
-		return false
-	}
-
-	saltedPw := []byte(user.Salt + password)
+	saltedPw := []byte(db.users[id].Salt + password)
 	err = bcrypt.CompareHashAndPassword(hash, saltedPw)
 	return err == nil
 }
 
-func (db *JsonUsersDatabase) ChangePassword(id, password string) error {
+func (db *JsonUserDatabase) ChangePassword(id, password string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	users, err := db.loadUsers()
+	if _, found := db.users[id]; !found {
+		return fmt.Errorf("user with ID %s does not exist in database", id)
+	}
+
+	user := db.users[id]
+	saltedPw := []byte(user.Salt + password)
+	hashBytes, err := bcrypt.GenerateFromPassword(saltedPw, bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("unable to load JSON user database: %w", err)
+		return fmt.Errorf("unable to generate password hash: %w", err)
 	}
 
-	for i := range users {
-		if users[i].Id == id {
-			saltedPw := []byte(users[i].Salt + password)
-			hashBytes, err := bcrypt.GenerateFromPassword(saltedPw, bcrypt.DefaultCost)
-			if err != nil {
-				return fmt.Errorf("unable to generate password hash: %w", err)
-			}
-
-			users[i].Hash = fmt.Sprintf("%x", hashBytes)
-			err = db.saveUsers(users)
-			if err != nil {
-				return fmt.Errorf("unable to save JSON user database: %w", err)
-			}
-			return nil
-		}
+	user.Hash = fmt.Sprintf("%x", hashBytes)
+	db.users[id] = user
+	err = db.saveUsers()
+	if err != nil {
+		return fmt.Errorf("unable to save JSON user database: %w", err)
 	}
 
-	return fmt.Errorf("unable to find user %s in database", id)
+	return nil
 }
