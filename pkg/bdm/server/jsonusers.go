@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 	"golang.org/x/crypto/bcrypt"
@@ -20,6 +21,7 @@ type JsonUser struct {
 
 type JsonUsersDatabase struct {
 	jsonFilePath string
+	mutex        sync.Mutex
 }
 
 func CreateJsonUserDb(dbfilePath string) (Users, error) {
@@ -90,6 +92,9 @@ func generateSalt() string {
 }
 
 func (db *JsonUsersDatabase) ListUsers() ([]User, error) {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	jsonUsers, err := db.loadUsers()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user database: %w", err)
@@ -104,6 +109,9 @@ func (db *JsonUsersDatabase) ListUsers() ([]User, error) {
 }
 
 func (db *JsonUsersDatabase) CreateUser(user User, password string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	users, err := db.loadUsers()
 	if err != nil {
 		return fmt.Errorf("unable to load existing user database: %w", err)
@@ -141,6 +149,9 @@ func (db *JsonUsersDatabase) CreateUser(user User, password string) error {
 }
 
 func (db *JsonUsersDatabase) DeleteUser(id string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	users, err := db.loadUsers()
 	if err != nil {
 		return fmt.Errorf("unable to load JSON user database: %w", err)
@@ -162,6 +173,9 @@ func (db *JsonUsersDatabase) DeleteUser(id string) error {
 }
 
 func (db *JsonUsersDatabase) SetRoles(id string, roles *Roles) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	users, err := db.loadUsers()
 	if err != nil {
 		return fmt.Errorf("unable to load JSON user database: %w", err)
@@ -182,6 +196,9 @@ func (db *JsonUsersDatabase) SetRoles(id string, roles *Roles) error {
 }
 
 func (db *JsonUsersDatabase) GetRoles(id string) (*Roles, error) {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	user, err := db.findUser(id)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find user: %w", err)
@@ -191,6 +208,9 @@ func (db *JsonUsersDatabase) GetRoles(id string) (*Roles, error) {
 }
 
 func (db *JsonUsersDatabase) Authenticate(id, password string) bool {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
 	user, err := db.findUser(id)
 	if err != nil {
 		return false
