@@ -7,11 +7,10 @@ import (
 	"net/http"
 
 	"github.com/cry-inc/bdm/pkg/bdm"
-	"github.com/julienschmidt/httprouter"
 )
 
-func createLimitsHandler(limits *bdm.ManifestLimits, permissions Permissions) httprouter.Handle {
-	return func(writer http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func createLimitsHandler(limits *bdm.ManifestLimits, permissions Permissions) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
 		if !permissions.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)

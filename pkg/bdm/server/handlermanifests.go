@@ -11,25 +11,25 @@ import (
 
 	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/cry-inc/bdm/pkg/bdm/store"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi/v5"
 )
 
-func createManifestHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
-	return func(writer http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func createManifestHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
 		if !permissions.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		name := params.ByName("name")
+		name := chi.URLParam(req, "name")
 		validName := bdm.ValidatePackageName(name)
 		if !validName {
 			http.Error(writer, "Bad package name", http.StatusBadRequest)
 			return
 		}
 
-		versionString := params.ByName("version")
+		versionString := chi.URLParam(req, "version")
 		version, err := strconv.Atoi(versionString)
 		if err != nil || version <= 0 {
 			http.Error(writer, "Bad package version", http.StatusBadRequest)
@@ -54,8 +54,8 @@ func createManifestHandler(packageStore store.Store, permissions Permissions) ht
 	}
 }
 
-func createManifestNamesHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
-	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func createManifestNamesHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
 		if !permissions.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
@@ -87,15 +87,15 @@ func createManifestNamesHandler(packageStore store.Store, permissions Permission
 	}
 }
 
-func createManifestVersionsHandler(packageStore store.Store, permissions Permissions) httprouter.Handle {
-	return func(writer http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func createManifestVersionsHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
 		if !permissions.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		name := params.ByName("name")
+		name := chi.URLParam(req, "name")
 		validName := bdm.ValidatePackageName(name)
 		if !validName {
 			http.Error(writer, "Bad package name", http.StatusBadRequest)
@@ -131,8 +131,8 @@ func createManifestVersionsHandler(packageStore store.Store, permissions Permiss
 	}
 }
 
-func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) httprouter.Handle {
-	return func(writer http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
 		if !permissions.CanWrite(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)

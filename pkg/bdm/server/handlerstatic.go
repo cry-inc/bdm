@@ -5,15 +5,13 @@ import (
 	"mime"
 	"net/http"
 	"path/filepath"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 //go:embed static
 var staticFs embed.FS
 
-func createStaticHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func createStaticHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if path == "/" {
 			path = "/index.html"
