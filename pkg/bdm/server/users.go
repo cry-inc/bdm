@@ -17,4 +17,5 @@ type Users interface {
 	SetRoles(id string, roles *Roles) error
 	GetRoles(id string) (*Roles, error)
 	Authenticate(id, password string) bool
+	ChangePassword(id, password string) error
 }

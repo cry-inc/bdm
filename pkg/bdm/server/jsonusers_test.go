@@ -8,6 +8,7 @@ import (
 const dbFile = "users.json"
 const userName = "foo@bar.com"
 const userPw = "secretpw"
+const newPw = "newsecretpw"
 
 func TestJsonUserDatabase(t *testing.T) {
 	// Create new database
@@ -88,6 +89,20 @@ func TestJsonUserDatabase(t *testing.T) {
 	}
 	// User should no longer have read & write permission
 	if roles.Reader || roles.Writer {
+		t.Fatal()
+	}
+
+	// Change password
+	err = db.ChangePassword(userName, newPw)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Old PW is no longer valid
+	if db.Authenticate(userName, userPw) {
+		t.Fatal()
+	}
+	if !db.Authenticate(userName, newPw) {
 		t.Fatal()
 	}
 
