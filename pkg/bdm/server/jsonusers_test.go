@@ -5,24 +5,24 @@ import (
 	"testing"
 )
 
-const dbFolder = "db"
-const userName = "foo@bar.com"
-const userPw = "secretpw"
-const newPw = "newsecretpw"
+const dbFolder = "dbfolder"
 
-func TestJsonUserDatabase(t *testing.T) {
+func TestUserDatabase(t *testing.T) {
+	const userName = "foo@bar.com"
+	const userPw = "secretpw"
+	const newPw = "newsecretpw"
+
 	// There will be an error if the folder does not exist
 	_, err := CreateJsonUserDatabase(dbFolder)
 	if err == nil {
 		t.Fatal()
 	}
 
+	// Create new database
 	err = os.MkdirAll(dbFolder, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// Create new database
 	db, err := CreateJsonUserDatabase(dbFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -139,5 +139,100 @@ func TestJsonUserDatabase(t *testing.T) {
 	err = db.DeleteUser(userName)
 	if err == nil {
 		t.Fatal()
+	}
+}
+
+func TestTokenDatabase(t *testing.T) {
+	const writeUser = "writer@foo.com"
+	const readUser = "reader@foo.com"
+	const password = "password"
+
+	// Create new database
+	err := os.MkdirAll(dbFolder, os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := CreateJsonUserDatabase(dbFolder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dbFolder)
+
+	// Add new users
+	user1 := User{
+		Id: writeUser,
+		Roles: Roles{
+			Reader: true,
+			Writer: true,
+		},
+	}
+	err = db.CreateUser(user1, password)
+	if err != nil {
+		t.Fatal(err)
+	}
+	user2 := User{
+		Id: readUser,
+		Roles: Roles{
+			Reader: true,
+			Writer: false,
+		},
+	}
+	err = db.CreateUser(user2, password)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add read tokens for both users
+	readUserReadToken, err := db.AddToken(readUser, ReadToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeUserReadToken, err := db.AddToken(writeUser, ReadToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add write tokens for both users
+	readUserWriteToken, err := db.AddToken(readUser, WriteToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeUserWriteToken, err := db.AddToken(writeUser, WriteToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get user tokens
+	readUserTokens, err := db.GetTokens(readUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(readUserTokens) != 2 {
+		t.Fatal()
+	}
+	writeUserTokens, err := db.GetTokens(writeUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(writeUserTokens) != 2 {
+		t.Fatal()
+	}
+
+	// Delete tokens
+	err = db.RemoveToken(readUserReadToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.RemoveToken(writeUserReadToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.RemoveToken(readUserWriteToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.RemoveToken(writeUserWriteToken)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
