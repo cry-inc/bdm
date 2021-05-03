@@ -5,18 +5,29 @@ import (
 	"testing"
 )
 
-const dbFile = "users.json"
+const dbFolder = "db"
 const userName = "foo@bar.com"
 const userPw = "secretpw"
 const newPw = "newsecretpw"
 
 func TestJsonUserDatabase(t *testing.T) {
-	// Create new database
-	db, err := CreateJsonUserDatabase(dbFile)
+	// There will be an error if the folder does not exist
+	_, err := CreateJsonUserDatabase(dbFolder)
+	if err == nil {
+		t.Fatal()
+	}
+
+	err = os.MkdirAll(dbFolder, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(dbFile)
+
+	// Create new database
+	db, err := CreateJsonUserDatabase(dbFolder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dbFolder)
 
 	// New DB should be empty
 	users, err := db.ListUsers()
