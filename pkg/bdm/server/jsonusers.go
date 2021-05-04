@@ -166,7 +166,7 @@ func generateRandomHexString(byteLength uint) string {
 	return fmt.Sprintf("%x", data)
 }
 
-func (db *JsonUserDatabase) ListUsers() ([]User, error) {
+func (db *JsonUserDatabase) GetUsers() ([]User, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -185,6 +185,10 @@ func (db *JsonUserDatabase) CreateUser(user User, password string) error {
 	// Check for duplicate user ID
 	if _, found := db.users[user.Id]; found {
 		return fmt.Errorf("user ID exists already in database")
+	}
+
+	if len(password) < 8 {
+		return fmt.Errorf("password must be at least 8 characters long")
 	}
 
 	salt := generateRandomHexString(16)
@@ -318,7 +322,11 @@ func (db *JsonUserDatabase) GetTokens(userId string) ([]Token, error) {
 	return tokens, nil
 }
 
-func (db *JsonUserDatabase) AddToken(userId, tokenType string) (string, error) {
+func (db *JsonUserDatabase) CreateToken(userId, tokenType string) (string, error) {
+	if tokenType != ReadToken && tokenType != WriteToken {
+		return "", fmt.Errorf("token type %s does not exist", tokenType)
+	}
+
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -348,7 +356,7 @@ func (db *JsonUserDatabase) AddToken(userId, tokenType string) (string, error) {
 	return token, nil
 }
 
-func (db *JsonUserDatabase) RemoveToken(tokenId string) error {
+func (db *JsonUserDatabase) DeleteToken(tokenId string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 

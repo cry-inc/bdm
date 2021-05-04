@@ -10,8 +10,8 @@ type User struct {
 	Roles
 }
 
-const ReadToken = "read"
-const WriteToken = "write"
+const ReadToken = "Read"
+const WriteToken = "Write"
 
 type Token struct {
 	Id   string
@@ -19,7 +19,7 @@ type Token struct {
 }
 
 type Users interface {
-	ListUsers() ([]User, error)
+	GetUsers() ([]User, error)
 	CreateUser(user User, password string) error
 	DeleteUser(userId string) error
 	SetRoles(userId string, roles *Roles) error
@@ -27,6 +27,6 @@ type Users interface {
 	Authenticate(userId, password string) bool
 	ChangePassword(userId, password string) error
 	GetTokens(userId string) ([]Token, error)
-	AddToken(userId, tokenType string) (string, error)
-	RemoveToken(tokenId string) error
+	CreateToken(userId, tokenType string) (string, error)
+	DeleteToken(tokenId string) error
 }
