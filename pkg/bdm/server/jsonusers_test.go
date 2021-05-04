@@ -30,7 +30,7 @@ func TestUserDatabase(t *testing.T) {
 	defer os.RemoveAll(dbFolder)
 
 	// New DB should be empty
-	users, err := db.ListUsers()
+	users, err := db.GetUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestUserDatabase(t *testing.T) {
 		t.Fatal()
 	}
 
-	// Add a new user
+	// Prepare a new user
 	user := User{
 		Id: userName,
 		Roles: Roles{
@@ -46,6 +46,12 @@ func TestUserDatabase(t *testing.T) {
 			Writer: true,
 		},
 	}
+	// Password not long enough
+	err = db.CreateUser(user, "short")
+	if err == nil {
+		t.Fatal()
+	}
+	// Use a valid password
 	err = db.CreateUser(user, userPw)
 	if err != nil {
 		t.Fatal(err)
@@ -58,7 +64,7 @@ func TestUserDatabase(t *testing.T) {
 	}
 
 	// DB is no longer empty
-	users, err = db.ListUsers()
+	users, err = db.GetUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +133,7 @@ func TestUserDatabase(t *testing.T) {
 	}
 
 	// New DB should be empty again
-	users, err = db.ListUsers()
+	users, err = db.GetUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,24 +188,42 @@ func TestTokenDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Try to add token for invalid user
+	_, err = db.CreateToken("novaliduser", ReadToken)
+	if err == nil {
+		t.Fatal()
+	}
+
+	// Invalid token type
+	_, err = db.CreateToken(readUser, "novalidtype")
+	if err == nil {
+		t.Fatal()
+	}
+
 	// Add read tokens for both users
-	readUserReadToken, err := db.AddToken(readUser, ReadToken)
+	readUserReadToken, err := db.CreateToken(readUser, ReadToken)
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserReadToken, err := db.AddToken(writeUser, ReadToken)
+	writeUserReadToken, err := db.CreateToken(writeUser, ReadToken)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Add write tokens for both users
-	readUserWriteToken, err := db.AddToken(readUser, WriteToken)
+	readUserWriteToken, err := db.CreateToken(readUser, WriteToken)
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserWriteToken, err := db.AddToken(writeUser, WriteToken)
+	writeUserWriteToken, err := db.CreateToken(writeUser, WriteToken)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// Get tokens for invalid user
+	_, err = db.GetTokens("invaliduser")
+	if err == nil {
+		t.Fatal()
 	}
 
 	// Get user tokens
@@ -210,6 +234,12 @@ func TestTokenDatabase(t *testing.T) {
 	if len(readUserTokens) != 2 {
 		t.Fatal()
 	}
+	if !containsToken(readUserReadToken, readUserTokens) {
+		t.Fatal()
+	}
+	if !containsToken(readUserWriteToken, readUserTokens) {
+		t.Fatal()
+	}
 	writeUserTokens, err := db.GetTokens(writeUser)
 	if err != nil {
 		t.Fatal(err)
@@ -217,22 +247,43 @@ func TestTokenDatabase(t *testing.T) {
 	if len(writeUserTokens) != 2 {
 		t.Fatal()
 	}
+	if !containsToken(writeUserReadToken, writeUserTokens) {
+		t.Fatal()
+	}
+	if !containsToken(writeUserWriteToken, writeUserTokens) {
+		t.Fatal()
+	}
+
+	// Delete invalid token
+	err = db.DeleteToken("invalidtoken")
+	if err == nil {
+		t.Fatal()
+	}
 
 	// Delete tokens
-	err = db.RemoveToken(readUserReadToken)
+	err = db.DeleteToken(readUserReadToken)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.RemoveToken(writeUserReadToken)
+	err = db.DeleteToken(writeUserReadToken)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.RemoveToken(readUserWriteToken)
+	err = db.DeleteToken(readUserWriteToken)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.RemoveToken(writeUserWriteToken)
+	err = db.DeleteToken(writeUserWriteToken)
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func containsToken(tokenId string, tokens []Token) bool {
+	for _, t := range tokens {
+		if t.Id == tokenId {
+			return true
+		}
+	}
+	return false
 }
