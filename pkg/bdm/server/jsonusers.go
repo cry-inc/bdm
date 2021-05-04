@@ -257,6 +257,7 @@ func (db *JsonUserDatabase) GetRoles(userId string) (*Roles, error) {
 		return nil, fmt.Errorf("user with ID %s does not exist in database", userId)
 	}
 
+	// Return safe copy
 	roles := db.users[userId].Roles
 	return &roles, nil
 }
@@ -322,38 +323,36 @@ func (db *JsonUserDatabase) GetTokens(userId string) ([]Token, error) {
 	return tokens, nil
 }
 
-func (db *JsonUserDatabase) CreateToken(userId, tokenType string) (string, error) {
-	if tokenType != ReadToken && tokenType != WriteToken {
-		return "", fmt.Errorf("token type %s does not exist", tokenType)
-	}
-
+func (db *JsonUserDatabase) CreateToken(userId string, roles *Roles) (*Token, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	if _, found := db.users[userId]; !found {
-		return "", fmt.Errorf("user with ID %s does not exist in database", userId)
+		return nil, fmt.Errorf("user with ID %s does not exist in database", userId)
 	}
 
-	token := generateRandomHexString(16)
-	if _, found := db.tokens[token]; found {
-		return "", fmt.Errorf("collision while generating new token %s", token)
+	tokenId := generateRandomHexString(16)
+	if _, found := db.tokens[tokenId]; found {
+		return nil, fmt.Errorf("collision while generating new token %s", tokenId)
 	}
 
 	jsonToken := JsonToken{
 		UserId: userId,
 		Token: Token{
-			Id:   token,
-			Type: tokenType,
+			Id:    tokenId,
+			Roles: *roles,
 		},
 	}
 
-	db.tokens[token] = jsonToken
+	db.tokens[tokenId] = jsonToken
 	err := db.saveTokens()
 	if err != nil {
-		return "", fmt.Errorf("unable to save JSON token database: %w", err)
+		return nil, fmt.Errorf("unable to save JSON token database: %w", err)
 	}
 
-	return token, nil
+	// Return a safe copy
+	token := jsonToken.Token
+	return &token, nil
 }
 
 func (db *JsonUserDatabase) DeleteToken(tokenId string) error {
@@ -373,38 +372,50 @@ func (db *JsonUserDatabase) DeleteToken(tokenId string) error {
 	return nil
 }
 
-func (db *JsonUserDatabase) hasPermission(tokenId, tokenType string) bool {
+const ReaderRole = "READER"
+const WriterRole = "WRITER"
+
+func (db *JsonUserDatabase) checkToken(tokenId, role string) bool {
+	if role != ReaderRole && role != WriterRole {
+		return false
+	}
+
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	if _, found := db.tokens[tokenId]; !found {
 		return false
 	}
-
 	token := db.tokens[tokenId]
-	if token.Type != tokenType {
+
+	// Check token roles
+	if role == ReaderRole && !token.Roles.Reader {
+		return false
+	}
+	if role == WriterRole && !token.Roles.Writer {
 		return false
 	}
 
 	if _, found := db.users[token.UserId]; !found {
 		return false
 	}
-
 	user := db.users[token.UserId]
-	if tokenType == ReadToken && user.Roles.Reader {
-		return true
+
+	// Check user roles
+	if role == ReaderRole && !user.Roles.Reader {
+		return false
 	}
-	if tokenType == WriteToken && user.Roles.Writer {
-		return true
+	if role == WriterRole && !user.Roles.Writer {
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (db *JsonUserDatabase) CanRead(tokenId string) bool {
-	return db.hasPermission(tokenId, ReadToken)
+	return db.checkToken(tokenId, ReaderRole)
 }
 
 func (db *JsonUserDatabase) CanWrite(tokenId string) bool {
-	return db.hasPermission(tokenId, WriteToken)
+	return db.checkToken(tokenId, WriterRole)
 }
