@@ -189,33 +189,27 @@ func TestTokenDatabase(t *testing.T) {
 	}
 
 	// Try to add token for invalid user
-	_, err = db.CreateToken("novaliduser", ReadToken)
-	if err == nil {
-		t.Fatal()
-	}
-
-	// Invalid token type
-	_, err = db.CreateToken(readUser, "novalidtype")
+	_, err = db.CreateToken("novaliduser", &Roles{Reader: true, Writer: false})
 	if err == nil {
 		t.Fatal()
 	}
 
 	// Add read tokens for both users
-	readUserReadToken, err := db.CreateToken(readUser, ReadToken)
+	readUserReadToken, err := db.CreateToken(readUser, &Roles{Reader: true, Writer: false})
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserReadToken, err := db.CreateToken(writeUser, ReadToken)
+	writeUserReadToken, err := db.CreateToken(writeUser, &Roles{Reader: true, Writer: false})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Add write tokens for both users
-	readUserWriteToken, err := db.CreateToken(readUser, WriteToken)
+	readUserWriteToken, err := db.CreateToken(readUser, &Roles{Reader: false, Writer: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserWriteToken, err := db.CreateToken(writeUser, WriteToken)
+	writeUserWriteToken, err := db.CreateToken(writeUser, &Roles{Reader: false, Writer: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,10 +228,10 @@ func TestTokenDatabase(t *testing.T) {
 	if len(readUserTokens) != 2 {
 		t.Fatal()
 	}
-	if !containsToken(readUserReadToken, readUserTokens) {
+	if !containsToken(readUserReadToken.Id, readUserTokens) {
 		t.Fatal()
 	}
-	if !containsToken(readUserWriteToken, readUserTokens) {
+	if !containsToken(readUserWriteToken.Id, readUserTokens) {
 		t.Fatal()
 	}
 	writeUserTokens, err := db.GetTokens(writeUser)
@@ -247,38 +241,38 @@ func TestTokenDatabase(t *testing.T) {
 	if len(writeUserTokens) != 2 {
 		t.Fatal()
 	}
-	if !containsToken(writeUserReadToken, writeUserTokens) {
+	if !containsToken(writeUserReadToken.Id, writeUserTokens) {
 		t.Fatal()
 	}
-	if !containsToken(writeUserWriteToken, writeUserTokens) {
+	if !containsToken(writeUserWriteToken.Id, writeUserTokens) {
 		t.Fatal()
 	}
 
 	// Check permissions of read user
-	if !db.CanRead(readUserReadToken) {
+	if !db.CanRead(readUserReadToken.Id) {
 		t.Fatal()
 	}
-	if db.CanRead(readUserWriteToken) {
+	if db.CanRead(readUserWriteToken.Id) {
 		t.Fatal()
 	}
-	if db.CanWrite(readUserReadToken) {
+	if db.CanWrite(readUserReadToken.Id) {
 		t.Fatal()
 	}
-	if db.CanWrite(readUserWriteToken) {
+	if db.CanWrite(readUserWriteToken.Id) {
 		t.Fatal()
 	}
 
 	// Check permission of write user
-	if !db.CanRead(writeUserReadToken) {
+	if !db.CanRead(writeUserReadToken.Id) {
 		t.Fatal()
 	}
-	if db.CanRead(writeUserWriteToken) {
+	if db.CanRead(writeUserWriteToken.Id) {
 		t.Fatal()
 	}
-	if db.CanWrite(writeUserReadToken) {
+	if db.CanWrite(writeUserReadToken.Id) {
 		t.Fatal()
 	}
-	if !db.CanWrite(writeUserWriteToken) {
+	if !db.CanWrite(writeUserWriteToken.Id) {
 		t.Fatal()
 	}
 
@@ -289,19 +283,19 @@ func TestTokenDatabase(t *testing.T) {
 	}
 
 	// Delete tokens
-	err = db.DeleteToken(readUserReadToken)
+	err = db.DeleteToken(readUserReadToken.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.DeleteToken(writeUserReadToken)
+	err = db.DeleteToken(writeUserReadToken.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.DeleteToken(readUserWriteToken)
+	err = db.DeleteToken(readUserWriteToken.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.DeleteToken(writeUserWriteToken)
+	err = db.DeleteToken(writeUserWriteToken.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
