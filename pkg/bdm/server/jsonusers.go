@@ -372,3 +372,39 @@ func (db *JsonUserDatabase) DeleteToken(tokenId string) error {
 
 	return nil
 }
+
+func (db *JsonUserDatabase) hasPermission(tokenId, tokenType string) bool {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
+	if _, found := db.tokens[tokenId]; !found {
+		return false
+	}
+
+	token := db.tokens[tokenId]
+	if token.Type != tokenType {
+		return false
+	}
+
+	if _, found := db.users[token.UserId]; !found {
+		return false
+	}
+
+	user := db.users[token.UserId]
+	if tokenType == ReadToken && user.Roles.Reader {
+		return true
+	}
+	if tokenType == WriteToken && user.Roles.Writer {
+		return true
+	}
+
+	return false
+}
+
+func (db *JsonUserDatabase) CanRead(tokenId string) bool {
+	return db.hasPermission(tokenId, ReadToken)
+}
+
+func (db *JsonUserDatabase) CanWrite(tokenId string) bool {
+	return db.hasPermission(tokenId, WriteToken)
+}

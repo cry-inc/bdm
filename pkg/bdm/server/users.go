@@ -29,4 +29,5 @@ type Users interface {
 	GetTokens(userId string) ([]Token, error)
 	CreateToken(userId, tokenType string) (string, error)
 	DeleteToken(tokenId string) error
+	Permissions
 }
