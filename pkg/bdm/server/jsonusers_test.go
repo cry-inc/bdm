@@ -254,6 +254,34 @@ func TestTokenDatabase(t *testing.T) {
 		t.Fatal()
 	}
 
+	// Check permissions of read user
+	if !db.CanRead(readUserReadToken) {
+		t.Fatal()
+	}
+	if db.CanRead(readUserWriteToken) {
+		t.Fatal()
+	}
+	if db.CanWrite(readUserReadToken) {
+		t.Fatal()
+	}
+	if db.CanWrite(readUserWriteToken) {
+		t.Fatal()
+	}
+
+	// Check permission of write user
+	if !db.CanRead(writeUserReadToken) {
+		t.Fatal()
+	}
+	if db.CanRead(writeUserWriteToken) {
+		t.Fatal()
+	}
+	if db.CanWrite(writeUserReadToken) {
+		t.Fatal()
+	}
+	if !db.CanWrite(writeUserWriteToken) {
+		t.Fatal()
+	}
+
 	// Delete invalid token
 	err = db.DeleteToken("invalidtoken")
 	if err == nil {
