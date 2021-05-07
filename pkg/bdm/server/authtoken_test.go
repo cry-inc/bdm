@@ -24,13 +24,13 @@ func TestGetUserIdFromJwt(t *testing.T) {
 	}
 
 	// Invalid base64 data in signature part
-	_, err = ReadAuthToken("a.a")
+	_, err = ReadAuthToken("0.a.a")
 	if err == nil {
 		t.Fatal()
 	}
 
 	// Invalid signature
-	_, err = ReadAuthToken("a.eyJmb28iOiAiYmFyIn0=")
+	_, err = ReadAuthToken("0.a.eyJmb28iOiAiYmFyIn0=")
 	if err == nil {
 		t.Fatal()
 	}
