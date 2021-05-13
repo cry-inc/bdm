@@ -100,7 +100,7 @@ func showAbout() {
 }
 
 func generateAPIToken() {
-	apiToken := util.GenAPIToken()
+	apiToken := util.GenerateAPIToken()
 	fmt.Println("API Token: " + apiToken)
 }
 
@@ -118,8 +118,8 @@ func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, c
 		log.Fatalf("Failed to open or create package store: %v", err)
 	}
 
-	permissions := server.SimplePermissions("", writeToken)
-	router, err := server.CreateRouter(packageStore, limits, permissions)
+	tokens := server.SimpleTokens("", writeToken)
+	router, err := server.CreateRouter(packageStore, limits, tokens)
 	if err != nil {
 		log.Fatal(err)
 	}

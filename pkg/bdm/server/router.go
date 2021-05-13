@@ -11,7 +11,7 @@ import (
 const apiTokenField = "bdm-api-token"
 
 // CreateRouter creates a new HTTP handler that handles all server routes
-func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) (http.Handler, error) {
+func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) (http.Handler, error) {
 	router := chi.NewRouter()
 
 	// Static assets for HTML UI
@@ -20,35 +20,35 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, permissi
 	router.Get("/favicon.ico", staticHandler)
 
 	// Download package files as ZIP
-	router.Get("/zip/{name}/{version}", createZipHandler(packageStore, permissions))
+	router.Get("/zip/{name}/{version}", createZipHandler(packageStore, tokens))
 
 	// Publish manifest for package
-	router.Get("/limits", createLimitsHandler(limits, permissions))
+	router.Get("/limits", createLimitsHandler(limits, tokens))
 
 	// Publish manifest for package
-	router.Post("/manifests", createPublishManifestHandler(packageStore, limits, permissions))
+	router.Post("/manifests", createPublishManifestHandler(packageStore, limits, tokens))
 
 	// Get list of package names
-	router.Get("/manifests", createManifestNamesHandler(packageStore, permissions))
+	router.Get("/manifests", createManifestNamesHandler(packageStore, tokens))
 
 	// Get versions for specific package by name
-	router.Get("/manifests/{name}", createManifestVersionsHandler(packageStore, permissions))
+	router.Get("/manifests/{name}", createManifestVersionsHandler(packageStore, tokens))
 
 	// Get manifest for specific package & version
-	router.Get("/manifests/{name}/{version}", createManifestHandler(packageStore, permissions))
+	router.Get("/manifests/{name}/{version}", createManifestHandler(packageStore, tokens))
 
 	// Upload one or more objects. The compressed request body contains:
 	// - 8 bytes uint for JSON data length
 	// - JSON data with bdm.Object array
 	// - object data
 	// The response body contains the uploaded objects as JSON array.
-	router.Post("/objects/upload", createUploadObjectsHandler(packageStore, limits, permissions))
+	router.Post("/objects/upload", createUploadObjectsHandler(packageStore, limits, tokens))
 
 	// Check for existing objects. The request body contains:
 	// - 8 bytes uint for JSON data length
 	// - compressed JSON data with bdm.Object array
 	// The response body contains the found objects as JSON array.
-	router.Post("/objects/check", createCheckObjectsHandler(packageStore, permissions))
+	router.Post("/objects/check", createCheckObjectsHandler(packageStore, tokens))
 
 	// Download objects. The request body contains:
 	// - 8 bytes uint for JSON data length
@@ -57,10 +57,10 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, permissi
 	// - 8 bytes uint for JSON data length
 	// - compressed JSON data with bdm.Object array
 	// - compressed object data
-	router.Post("/objects/download", createDownloadObjectsHandler(packageStore, permissions))
+	router.Post("/objects/download", createDownloadObjectsHandler(packageStore, tokens))
 
 	// Downloads a single file from a package
-	router.Get("/files/{name}/{version}/{hash}/{file}", createFilesHandler(packageStore, permissions))
+	router.Get("/files/{name}/{version}/{hash}/{file}", createFilesHandler(packageStore, tokens))
 
 	return router, nil
 }

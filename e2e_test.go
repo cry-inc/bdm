@@ -323,8 +323,8 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	}
 
 	limits := bdm.ManifestLimits{}
-	permissions := server.SimplePermissions(readToken, writeToken)
-	handler, err := server.CreateRouter(packageStore, &limits, permissions)
+	tokens := server.SimpleTokens(readToken, writeToken)
+	handler, err := server.CreateRouter(packageStore, &limits, tokens)
 	if err != nil {
 		t.Fatal(err)
 	}

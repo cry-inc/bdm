@@ -13,10 +13,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func createZipHandler(store store.Store, permissions Permissions) http.HandlerFunc {
+func createZipHandler(store store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

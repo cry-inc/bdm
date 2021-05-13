@@ -19,6 +19,11 @@ type loginResponse struct {
 
 func createLoginGetHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
+		if !users.Available() {
+			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			return
+		}
+
 		cookie, err := req.Cookie("login")
 		if err != nil {
 			writer.Header().Set("Content-Type", "application/json")
@@ -48,6 +53,11 @@ func createLoginGetHandler(users Users) http.HandlerFunc {
 
 func createLoginPostHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
+		if !users.Available() {
+			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			return
+		}
+
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading login request: %w", err))
@@ -92,8 +102,13 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 	}
 }
 
-func createLoginDeleteHandler() http.HandlerFunc {
+func createLoginDeleteHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
+		if !users.Available() {
+			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			return
+		}
+
 		cookie := http.Cookie{
 			Name:     "login",
 			Value:    "",

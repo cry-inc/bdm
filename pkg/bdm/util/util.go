@@ -25,9 +25,17 @@ func Int64ToBytes(value int64) []byte {
 	return buffer
 }
 
-// GenAPIToken generates a random new API token
-func GenAPIToken() string {
-	token := make([]byte, 32)
-	rand.Read(token)
-	return fmt.Sprintf("%x", token)
+// GenerateRandomHexString generates a random hex string with byteLength * 2 characters
+func GenerateRandomHexString(byteLength uint) string {
+	data := make([]byte, byteLength)
+	_, err := rand.Read(data)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", data)
+}
+
+// GenerateAPIToken generates a random new API token
+func GenerateAPIToken() string {
+	return GenerateRandomHexString(32)
 }

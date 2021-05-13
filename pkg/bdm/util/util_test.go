@@ -29,8 +29,8 @@ func TestInt64Helper(t *testing.T) {
 	}
 }
 
-func TestGenAPIToken(t *testing.T) {
-	token := GenAPIToken()
+func TestGenerateAPIToken(t *testing.T) {
+	token := GenerateAPIToken()
 	if len(token) != 64 {
 		t.Fatal(token)
 	}
