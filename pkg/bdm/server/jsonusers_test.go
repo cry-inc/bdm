@@ -18,6 +18,11 @@ func TestUserDatabase(t *testing.T) {
 	}
 	defer os.RemoveAll(usersFile)
 
+	// User management is available
+	if !users.Available() {
+		t.Fatal()
+	}
+
 	// New DB should be empty
 	userList, err := users.GetUsers()
 	if err != nil {

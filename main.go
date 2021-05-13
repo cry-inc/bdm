@@ -118,8 +118,9 @@ func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, c
 		log.Fatalf("Failed to open or create package store: %v", err)
 	}
 
+	users := server.CreateNoUsers()
 	tokens := server.SimpleTokens("", writeToken)
-	router, err := server.CreateRouter(packageStore, limits, tokens)
+	router, err := server.CreateRouter(packageStore, limits, users, tokens)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -11,7 +11,7 @@ import (
 const apiTokenField = "bdm-api-token"
 
 // CreateRouter creates a new HTTP handler that handles all server routes
-func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) (http.Handler, error) {
+func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, users Users, tokens Tokens) (http.Handler, error) {
 	router := chi.NewRouter()
 
 	// Static assets for HTML UI
@@ -61,6 +61,13 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, tokens T
 
 	// Downloads a single file from a package
 	router.Get("/files/{name}/{version}/{hash}/{file}", createFilesHandler(packageStore, tokens))
+
+	// Login
+	router.Post("/login", createLoginPostHandler(users))
+	// Logout
+	router.Delete("/login", createLoginDeleteHandler(users))
+	// Get current user
+	router.Get("/login", createLoginGetHandler(users))
 
 	return router, nil
 }
