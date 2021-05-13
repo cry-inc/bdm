@@ -10,10 +10,10 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/store"
 )
 
-func createCheckObjectsHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+func createCheckObjectsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -36,10 +36,10 @@ func createCheckObjectsHandler(packageStore store.Store, permissions Permissions
 	}
 }
 
-func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) http.HandlerFunc {
+func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanWrite(apiToken) {
+		if !tokens.CanWrite(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -62,10 +62,10 @@ func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLi
 	}
 }
 
-func createDownloadObjectsHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+func createDownloadObjectsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

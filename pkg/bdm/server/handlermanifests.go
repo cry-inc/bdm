@@ -14,10 +14,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func createManifestHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+func createManifestHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -54,10 +54,10 @@ func createManifestHandler(packageStore store.Store, permissions Permissions) ht
 	}
 }
 
-func createManifestNamesHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+func createManifestNamesHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -87,10 +87,10 @@ func createManifestNamesHandler(packageStore store.Store, permissions Permission
 	}
 }
 
-func createManifestVersionsHandler(packageStore store.Store, permissions Permissions) http.HandlerFunc {
+func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -131,10 +131,10 @@ func createManifestVersionsHandler(packageStore store.Store, permissions Permiss
 	}
 }
 
-func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, permissions Permissions) http.HandlerFunc {
+func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanWrite(apiToken) {
+		if !tokens.CanWrite(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

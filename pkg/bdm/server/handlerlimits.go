@@ -9,10 +9,10 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm"
 )
 
-func createLimitsHandler(limits *bdm.ManifestLimits, permissions Permissions) http.HandlerFunc {
+func createLimitsHandler(limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		apiToken := req.Header.Get(apiTokenField)
-		if !permissions.CanRead(apiToken) {
+		if !tokens.CanRead(apiToken) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

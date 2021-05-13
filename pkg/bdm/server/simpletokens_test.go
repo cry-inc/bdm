@@ -1,0 +1,61 @@
+package server
+
+import (
+	"testing"
+)
+
+func TestSimpleTokens(t *testing.T) {
+	tokens := SimpleTokens("read", "write")
+
+	// Check empty tokens
+	if tokens.CanRead("") {
+		t.Fatal()
+	}
+	if tokens.CanWrite("") {
+		t.Fatal()
+	}
+
+	// Check wrong tokens
+	if tokens.CanRead("wrong") {
+		t.Fatal()
+	}
+	if tokens.CanWrite("wrong") {
+		t.Fatal()
+	}
+	if tokens.CanWrite("read") {
+		t.Fatal()
+	}
+
+	// Check correct tokens
+	if !tokens.CanRead("read") {
+		t.Fatal()
+	}
+	if !tokens.CanWrite("write") {
+		t.Fatal()
+	}
+
+	// Check "inherited" permissions
+	if !tokens.CanRead("write") {
+		t.Fatal("Write token should be also able to read!")
+	}
+
+	// Test free for all reading
+	tokens = SimpleTokens("", "write")
+	if !tokens.CanRead("") {
+		t.Fatal()
+	}
+	if !tokens.CanWrite("write") {
+		t.Fatal()
+	}
+	if !tokens.CanRead("write") {
+		t.Fatal()
+	}
+	if tokens.CanRead("wrong") {
+		t.Fatal()
+	}
+
+	// User mode is not supported
+	if !tokens.NoUserMode() {
+		t.Fatal()
+	}
+}
