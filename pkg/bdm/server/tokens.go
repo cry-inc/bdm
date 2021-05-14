@@ -8,6 +8,7 @@ type Token struct {
 type Tokens interface {
 	CanRead(token string) bool
 	CanWrite(token string) bool
+	IsAdmin(token string) bool
 
 	NoUserMode() bool
 	GetTokens(userId string) ([]Token, error)

@@ -23,6 +23,7 @@ import (
 
 const readToken = ""
 const writeToken = "1234write"
+const adminToken = ""
 const storeFolder = "test/store"
 const outputFolder = "test/output"
 const cacheFolder = "test/cache"
@@ -324,7 +325,7 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 
 	limits := bdm.ManifestLimits{}
 	users := server.CreateNoUsers()
-	tokens := server.SimpleTokens(readToken, writeToken)
+	tokens := server.SimpleTokens(readToken, writeToken, adminToken)
 	handler, err := server.CreateRouter(packageStore, &limits, users, tokens)
 	if err != nil {
 		t.Fatal(err)

@@ -5,7 +5,7 @@ import (
 )
 
 func TestSimpleTokens(t *testing.T) {
-	tokens := SimpleTokens("read", "write")
+	tokens := SimpleTokens("read", "write", "admin")
 
 	// Check empty tokens
 	if tokens.CanRead("") {
@@ -25,6 +25,9 @@ func TestSimpleTokens(t *testing.T) {
 	if tokens.CanWrite("read") {
 		t.Fatal()
 	}
+	if tokens.IsAdmin("wrong") {
+		t.Fatal()
+	}
 
 	// Check correct tokens
 	if !tokens.CanRead("read") {
@@ -33,14 +36,23 @@ func TestSimpleTokens(t *testing.T) {
 	if !tokens.CanWrite("write") {
 		t.Fatal()
 	}
+	if !tokens.IsAdmin("admin") {
+		t.Fatal()
+	}
 
 	// Check "inherited" permissions
 	if !tokens.CanRead("write") {
 		t.Fatal("Write token should be also able to read!")
 	}
+	if !tokens.CanRead("admin") {
+		t.Fatal("Admin token should be also able to read!")
+	}
+	if !tokens.CanWrite("admin") {
+		t.Fatal("Admin token should be also able to write!")
+	}
 
-	// Test free for all reading
-	tokens = SimpleTokens("", "write")
+	// Test free for all reading without admin permissions
+	tokens = SimpleTokens("", "write", "")
 	if !tokens.CanRead("") {
 		t.Fatal()
 	}
@@ -51,6 +63,9 @@ func TestSimpleTokens(t *testing.T) {
 		t.Fatal()
 	}
 	if tokens.CanRead("wrong") {
+		t.Fatal()
+	}
+	if tokens.IsAdmin("") {
 		t.Fatal()
 	}
 

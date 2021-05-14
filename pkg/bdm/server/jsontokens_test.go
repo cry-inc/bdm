@@ -8,6 +8,7 @@ import (
 func TestTokenDatabase(t *testing.T) {
 	const writeUser = "writer@foo.com"
 	const readUser = "reader@foo.com"
+	const adminUser = "admin@foo.com"
 	const password = "password"
 	const tokensFile = "tokens.json"
 	const usersFile = "users.json"
@@ -42,30 +43,63 @@ func TestTokenDatabase(t *testing.T) {
 		Id: readUser,
 		Roles: Roles{
 			Reader: true,
-			Writer: false,
 		},
 	}
 	err = users.CreateUser(user2, password)
 	if err != nil {
 		t.Fatal(err)
 	}
+	user3 := User{
+		Id: adminUser,
+		Roles: Roles{
+			Reader: true,
+			Writer: true,
+			Admin:  true,
+		},
+	}
+	err = users.CreateUser(user3, password)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Add read tokens for both users
-	readUserReadToken, err := tokens.CreateToken(readUser, &Roles{Reader: true, Writer: false})
+	// Add read tokens for all users
+	readUserReadToken, err := tokens.CreateToken(readUser, &Roles{Reader: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserReadToken, err := tokens.CreateToken(writeUser, &Roles{Reader: true, Writer: false})
+	writeUserReadToken, err := tokens.CreateToken(writeUser, &Roles{Reader: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	adminUserReadToken, err := tokens.CreateToken(adminUser, &Roles{Reader: true})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Add write tokens for both users
-	readUserWriteToken, err := tokens.CreateToken(readUser, &Roles{Reader: false, Writer: true})
+	// Add write tokens for all users
+	readUserWriteToken, err := tokens.CreateToken(readUser, &Roles{Writer: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	writeUserWriteToken, err := tokens.CreateToken(writeUser, &Roles{Reader: false, Writer: true})
+	writeUserWriteToken, err := tokens.CreateToken(writeUser, &Roles{Writer: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	adminUserWriteToken, err := tokens.CreateToken(adminUser, &Roles{Writer: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add admin tokens for all users
+	readUserAdminToken, err := tokens.CreateToken(readUser, &Roles{Admin: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeUserAdminToken, err := tokens.CreateToken(writeUser, &Roles{Admin: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	adminUserAdminToken, err := tokens.CreateToken(adminUser, &Roles{Admin: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,29 +115,26 @@ func TestTokenDatabase(t *testing.T) {
 
 	// Get user tokens
 	readUserTokens, err := tokens.GetTokens(readUser)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(readUserTokens) != 2 {
-		t.Fatal()
-	}
-	if !containsToken(readUserReadToken.Id, readUserTokens) {
-		t.Fatal()
-	}
-	if !containsToken(readUserWriteToken.Id, readUserTokens) {
+	if err != nil || len(readUserTokens) != 3 {
 		t.Fatal()
 	}
 	writeUserTokens, err := tokens.GetTokens(writeUser)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(writeUserTokens) != 2 {
+	if err != nil || len(writeUserTokens) != 3 {
 		t.Fatal()
 	}
-	if !containsToken(writeUserReadToken.Id, writeUserTokens) {
+	adminUserTokens, err := tokens.GetTokens(adminUser)
+	if err != nil || len(adminUserTokens) != 3 {
 		t.Fatal()
 	}
-	if !containsToken(writeUserWriteToken.Id, writeUserTokens) {
+
+	// Check all the admin users tokens
+	if !containsToken(adminUserReadToken.Id, adminUserTokens) {
+		t.Fatal()
+	}
+	if !containsToken(adminUserWriteToken.Id, adminUserTokens) {
+		t.Fatal()
+	}
+	if !containsToken(adminUserAdminToken.Id, adminUserTokens) {
 		t.Fatal()
 	}
 
@@ -111,13 +142,10 @@ func TestTokenDatabase(t *testing.T) {
 	if !tokens.CanRead(readUserReadToken.Id) {
 		t.Fatal()
 	}
-	if tokens.CanRead(readUserWriteToken.Id) {
-		t.Fatal()
-	}
-	if tokens.CanWrite(readUserReadToken.Id) {
-		t.Fatal()
-	}
 	if tokens.CanWrite(readUserWriteToken.Id) {
+		t.Fatal()
+	}
+	if tokens.IsAdmin(readUserAdminToken.Id) {
 		t.Fatal()
 	}
 
@@ -125,13 +153,21 @@ func TestTokenDatabase(t *testing.T) {
 	if !tokens.CanRead(writeUserReadToken.Id) {
 		t.Fatal()
 	}
-	if tokens.CanRead(writeUserWriteToken.Id) {
+	if !tokens.CanWrite(writeUserWriteToken.Id) {
 		t.Fatal()
 	}
-	if tokens.CanWrite(writeUserReadToken.Id) {
+	if tokens.IsAdmin(writeUserAdminToken.Id) {
+		t.Fatal()
+	}
+
+	// Check permission of admin user
+	if !tokens.CanRead(adminUserReadToken.Id) {
 		t.Fatal()
 	}
 	if !tokens.CanWrite(writeUserWriteToken.Id) {
+		t.Fatal()
+	}
+	if !tokens.IsAdmin(adminUserAdminToken.Id) {
 		t.Fatal()
 	}
 
@@ -141,12 +177,8 @@ func TestTokenDatabase(t *testing.T) {
 		t.Fatal()
 	}
 
-	// Delete tokens
+	// Delete some tokens
 	err = tokens.DeleteToken(readUserReadToken.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = tokens.DeleteToken(writeUserReadToken.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,9 +186,15 @@ func TestTokenDatabase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = tokens.DeleteToken(writeUserWriteToken.Id)
+	err = tokens.DeleteToken(readUserAdminToken.Id)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// Check token count again
+	readUserTokens, err = tokens.GetTokens(readUser)
+	if err != nil || len(readUserTokens) != 0 {
+		t.Fatal()
 	}
 }
 
