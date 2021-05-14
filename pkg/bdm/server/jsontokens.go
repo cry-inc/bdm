@@ -162,6 +162,7 @@ func (tokens *jsonTokens) DeleteToken(tokenId string) error {
 
 const ReaderRole = "READER"
 const WriterRole = "WRITER"
+const AdminRole = "ADMIN"
 
 func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
 	tokens.mutex.Lock()
@@ -179,6 +180,9 @@ func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
 	if role == WriterRole && !token.Roles.Writer {
 		return false
 	}
+	if role == AdminRole && !token.Roles.Admin {
+		return false
+	}
 
 	user, err := tokens.users.GetUser(token.UserId)
 	if err != nil {
@@ -192,6 +196,9 @@ func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
 	if role == WriterRole && !user.Roles.Writer {
 		return false
 	}
+	if role == AdminRole && !user.Roles.Admin {
+		return false
+	}
 
 	return true
 }
@@ -202,4 +209,8 @@ func (tokens *jsonTokens) CanRead(tokenId string) bool {
 
 func (tokens *jsonTokens) CanWrite(tokenId string) bool {
 	return tokens.checkToken(tokenId, WriterRole)
+}
+
+func (tokens *jsonTokens) IsAdmin(tokenId string) bool {
+	return tokens.checkToken(tokenId, AdminRole)
 }
