@@ -5,31 +5,16 @@ import (
 )
 
 func TestFileExists(t *testing.T) {
-	if false != FileExists("filedoesnotexist") {
-		t.Fatal()
-	}
-	if false != FileExists(".") {
-		t.Fatal()
-	}
-	if false != FileExists("./") {
-		t.Fatal()
-	}
-	if true != FileExists("fs.go") {
-		t.Fatal()
-	}
+	Assert(t, !FileExists("filedoesnotexist"))
+	Assert(t, !FileExists("."))
+	Assert(t, !FileExists("./"))
+	Assert(t, FileExists("fs.go"))
 }
 
 func TestFolderExists(t *testing.T) {
-	if false != FolderExists("folderdoesnotexist") {
-		t.Fatal()
-	}
-	if true != FolderExists(".") {
-		t.Fatal()
-	}
-	if true != FolderExists("./") {
-		t.Fatal()
-	}
-	if false != FolderExists("fs.go") {
-		t.Fatal()
-	}
+	Assert(t, !FolderExists("folderdoesnotexist"))
+	Assert(t, !FolderExists("fs.go"))
+	Assert(t, FolderExists("."))
+	Assert(t, FolderExists(".."))
+	Assert(t, FolderExists("./"))
 }
