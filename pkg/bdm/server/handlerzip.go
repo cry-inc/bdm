@@ -15,8 +15,7 @@ import (
 
 func createZipHandler(store store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		apiToken := req.Header.Get(apiTokenField)
-		if !tokens.CanRead(apiToken) {
+		if !hasReadToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
