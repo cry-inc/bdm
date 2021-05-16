@@ -8,8 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const apiTokenField = "bdm-api-token"
-
 // CreateRouter creates a new HTTP handler that handles all server routes
 func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, users Users, tokens Tokens) http.Handler {
 	router := chi.NewRouter()

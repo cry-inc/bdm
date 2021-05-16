@@ -16,8 +16,7 @@ import (
 
 func createManifestHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		apiToken := req.Header.Get(apiTokenField)
-		if !tokens.CanRead(apiToken) {
+		if !hasReadToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -56,8 +55,7 @@ func createManifestHandler(packageStore store.Store, tokens Tokens) http.Handler
 
 func createManifestNamesHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		apiToken := req.Header.Get(apiTokenField)
-		if !tokens.CanRead(apiToken) {
+		if !hasReadToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -89,8 +87,7 @@ func createManifestNamesHandler(packageStore store.Store, tokens Tokens) http.Ha
 
 func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		apiToken := req.Header.Get(apiTokenField)
-		if !tokens.CanRead(apiToken) {
+		if !hasReadToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -133,8 +130,7 @@ func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http
 
 func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		apiToken := req.Header.Get(apiTokenField)
-		if !tokens.CanWrite(apiToken) {
+		if !hasWriteToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
