@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const defaultExpiration time.Duration = 365 * 24 * time.Hour
+const defaultExpiration time.Duration = 24 * time.Hour
 
 var secret = make([]byte, 512)
 
