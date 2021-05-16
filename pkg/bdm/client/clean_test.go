@@ -14,49 +14,27 @@ func TestCleanPackage(t *testing.T) {
 	const testFolder = "../../../test/example"
 
 	manifest, err := bdm.GenerateManifest("foo", testFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Clean a already cleaned folder should work
 	err = CleanPackage(manifest, testFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	junkFile := path.Join(testFolder, "bla")
 	err = ioutil.WriteFile(junkFile, []byte{123}, os.ModePerm)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer os.Remove(junkFile)
-
-	if !util.FileExists(junkFile) {
-		t.Fatal("Failed to create junk file")
-	}
+	util.Assert(t, util.FileExists(junkFile))
 
 	junkFolder := path.Join(path.Join(testFolder, "foo"), "bar")
 	err = os.MkdirAll(junkFolder, os.ModePerm)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer os.RemoveAll(junkFolder)
-
-	if !util.FolderExists(junkFolder) {
-		t.Fatal("Failed to create junk folder")
-	}
+	util.Assert(t, util.FolderExists(junkFolder))
 
 	// Clean folder should kill the junk
 	err = CleanPackage(manifest, testFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if util.FileExists(junkFile) {
-		t.Fatal("Cleaning did not delete the junk file!")
-	}
-
-	if util.FolderExists(junkFolder) {
-		t.Fatal("Cleaning did not delete the junk folder!")
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, !util.FileExists(junkFile))
+	util.Assert(t, !util.FolderExists(junkFolder))
 }
