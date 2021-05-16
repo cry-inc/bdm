@@ -10,23 +10,59 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func createUsersGetHandler(users Users) http.HandlerFunc {
+type UserHandlerFunc func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User)
+
+func extractUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
 			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
 			return
 		}
 
-		user, err := getCurrentUser(req, users)
+		authUser, err := getCurrentUser(req, users)
 		if err != nil {
 			http.Error(writer, "Log in required", http.StatusForbidden)
 			return
 		}
-		if !user.Admin {
+
+		var paramUser *User = nil
+		paramUserId := chi.URLParam(req, "user")
+		if len(paramUserId) > 0 {
+			paramUser, err = users.GetUser(paramUserId)
+			if err != nil {
+				http.Error(writer, "User from URL does not exist", http.StatusNotFound)
+				return
+			}
+		}
+
+		handler(writer, req, authUser, paramUser)
+	}
+}
+
+func enforceAdminUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
+	return extractUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+		if !authUser.Admin {
 			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
 			return
 		}
 
+		handler(writer, req, authUser, paramUser)
+	})
+}
+
+func enforceAdminOrMatchUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
+	return extractUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+		if authUser.Id != paramUser.Id && !authUser.Admin {
+			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
+			return
+		}
+
+		handler(writer, req, authUser, paramUser)
+	})
+}
+
+func createUsersGetHandler(users Users) http.HandlerFunc {
+	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		userList, err := users.GetUsers()
 		if err != nil {
 			log.Print(fmt.Errorf("error getting users list: %w", err))
@@ -43,7 +79,7 @@ func createUsersGetHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }
 
 type createUserRequest struct {
@@ -52,22 +88,7 @@ type createUserRequest struct {
 }
 
 func createUsersPostHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		user, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-		if !user.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
+	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create user request: %w", err))
@@ -107,34 +128,12 @@ func createUsersPostHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }
 
 func createUserGetHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		user, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-		userId := chi.URLParam(req, "user")
-		if user.Id != userId && !user.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		requestedUser, err := users.GetUser(userId)
-		if err != nil {
-			http.Error(writer, "User not found", http.StatusNotFound)
-			return
-		}
-
-		jsonData, err := json.Marshal(requestedUser)
+	return enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+		jsonData, err := json.Marshal(paramUser)
 		if err != nil {
 			log.Print(fmt.Errorf("error marshalling JSON user data: %w", err))
 			http.Error(writer, "Failed to generate JSON user data", http.StatusInternalServerError)
@@ -143,34 +142,12 @@ func createUserGetHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }
 
 func createUserDeleteHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		user, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-		if !user.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		userId := chi.URLParam(req, "user")
-		_, err = users.GetUser(userId)
-		if err != nil {
-			http.Error(writer, "User not found", http.StatusNotFound)
-			return
-		}
-
-		err = users.DeleteUser(userId)
+	return enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+		err := users.DeleteUser(paramUser.Id)
 		if err != nil {
 			log.Print(fmt.Errorf("error deleting user: %w", err))
 			http.Error(writer, "Failed to delete user", http.StatusInternalServerError)
@@ -179,7 +156,7 @@ func createUserDeleteHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(writer, "{}")
-	}
+	})
 }
 
 type changePasswordRequest struct {
@@ -191,29 +168,7 @@ type changeRolesRequest struct {
 }
 
 func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		user, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-		userId := chi.URLParam(req, "user")
-		if user.Id != userId && !user.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		_, err = users.GetUser(userId)
-		if err != nil {
-			http.Error(writer, "User not found", http.StatusNotFound)
-			return
-		}
-
+	return enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
@@ -228,7 +183,7 @@ func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 			return
 		}
 
-		err = users.ChangePassword(userId, passChange.Password)
+		err = users.ChangePassword(paramUser.Id, passChange.Password)
 		if err != nil {
 			http.Error(writer, "Failed to apply new password", http.StatusBadRequest)
 			return
@@ -236,33 +191,11 @@ func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write([]byte("{}"))
-	}
+	})
 }
 
 func createUserPatchRolesHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		user, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-		userId := chi.URLParam(req, "user")
-		if user.Id != userId && !user.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		_, err = users.GetUser(userId)
-		if err != nil {
-			http.Error(writer, "User not found", http.StatusNotFound)
-			return
-		}
-
+	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
@@ -277,14 +210,14 @@ func createUserPatchRolesHandler(users Users) http.HandlerFunc {
 			return
 		}
 
-		err = users.SetRoles(userId, &roleChange.Roles)
+		err = users.SetRoles(paramUser.Id, &roleChange.Roles)
 		if err != nil {
 			log.Print(fmt.Errorf("failed to set new roles: %w", err))
 			http.Error(writer, "Failed to apply new roles", http.StatusInternalServerError)
 			return
 		}
 
-		changedUser, err := users.GetUser(userId)
+		changedUser, err := users.GetUser(paramUser.Id)
 		if err != nil {
 			log.Print(fmt.Errorf("changed user no longer exists: %w", err))
 			http.Error(writer, "Changed user no longer exists", http.StatusInternalServerError)
@@ -300,5 +233,5 @@ func createUserPatchRolesHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }
