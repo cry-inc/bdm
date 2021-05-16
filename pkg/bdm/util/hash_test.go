@@ -10,9 +10,7 @@ import (
 func TestCreateHasher(t *testing.T) {
 	hasher := CreateHasher()
 	sum := hasher.Sum(nil)
-	if len(sum) <= 0 {
-		t.Fatal()
-	}
+	Assert(t, len(sum) > 0)
 }
 
 func TestHashStream(t *testing.T) {

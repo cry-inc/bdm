@@ -10,9 +10,8 @@ import (
 )
 
 func checkName(t *testing.T, name string, valid bool) {
-	if ValidatePackageName(name) != valid {
-		t.Fatal(name)
-	}
+	t.Helper()
+	util.Assert(t, ValidatePackageName(name) == valid)
 }
 
 func TestValidatePackageName(t *testing.T) {
@@ -44,9 +43,8 @@ func generateUnpublishedManifest() Manifest {
 
 func checkUnpublishedManifest(t *testing.T, manifest *Manifest, valid bool) {
 	err := ValidateUnpublishedManifest(manifest)
-	if valid && err != nil || !valid && err == nil {
-		t.Fatal(manifest)
-	}
+	t.Helper()
+	util.Assert(t, valid && err == nil || !valid && err != nil)
 }
 
 func TestValidateUnpublishedManifest(t *testing.T) {
@@ -94,9 +92,8 @@ func TestValidateUnpublishedManifest(t *testing.T) {
 
 func checkPublishedManifest(t *testing.T, manifest *Manifest, valid bool) {
 	err := ValidatePublishedManifest(manifest)
-	if valid && err != nil || !valid && err == nil {
-		t.Fatal(manifest)
-	}
+	t.Helper()
+	util.Assert(t, valid && err == nil || !valid && err != nil)
 }
 
 func TestValidatePublishedManifest(t *testing.T) {
