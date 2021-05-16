@@ -20,6 +20,11 @@ func TestJwtEndToEnd(t *testing.T) {
 	util.Assert(t, readToken.Token == token.Token)
 	util.AssertEqualString(t, "foo@bar.com", readToken.UserId)
 	util.Assert(t, readToken.Expires.Unix() == token.Expires.Unix())
+
+	// Test expired token
+	token = createAuthToken("foo@bar.com", -10*time.Second)
+	_, err = readAuthToken(token.Token)
+	util.AssertError(t, err)
 }
 
 func TestGetUserIdFromJwt(t *testing.T) {
