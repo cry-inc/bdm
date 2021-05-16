@@ -11,15 +11,11 @@ func TestCompression(t *testing.T) {
 
 	r, w := io.Pipe()
 	cr, err := CreateDecompressingReader(r)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNoError(t, err)
 	defer cr.Close()
 
 	cw, err := CreateCompressingWriter(w)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNoError(t, err)
 
 	go func() {
 		defer w.Close()
@@ -30,22 +26,15 @@ func TestCompression(t *testing.T) {
 			panic(err)
 		}
 		if n != len(testData) {
-			panic("Failed to write data")
+			panic("failed to write data")
 		}
 	}()
 
 	readData, err := ioutil.ReadAll(cr)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(readData) != len(testData) {
-		t.Fatal()
-	}
+	AssertNoError(t, err)
+	Assert(t, len(readData) == len(testData))
 
 	for i := range readData {
-		if readData[i] != testData[i] {
-			t.Fatal(i)
-		}
+		Assert(t, readData[i] == testData[i])
 	}
 }
