@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"sync"
 
 	"github.com/cry-inc/bdm/pkg/bdm/util"
@@ -123,6 +124,14 @@ func (users *jsonUsers) GetUser(userId string) (*User, error) {
 }
 
 func (users *jsonUsers) CreateUser(user User, password string) error {
+	valid, err := regexp.MatchString(`^[a-zA-Z0-9_.@-]+$`, user.Id)
+	if err != nil {
+		return fmt.Errorf("failed to compile regex: %w", err)
+	}
+	if !valid {
+		return fmt.Errorf("invalid user ID characters")
+	}
+
 	users.mutex.Lock()
 	defer users.mutex.Unlock()
 
