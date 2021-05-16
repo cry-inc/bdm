@@ -326,10 +326,7 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	limits := bdm.ManifestLimits{}
 	users := server.CreateNoUsers()
 	tokens := server.SimpleTokens(readToken, writeToken, adminToken)
-	handler, err := server.CreateRouter(packageStore, &limits, users, tokens)
-	if err != nil {
-		t.Fatal(err)
-	}
+	handler := server.CreateRouter(packageStore, &limits, users, tokens)
 
 	server := &http.Server{Addr: "127.0.0.1:2323", Handler: handler}
 	stopped := make(chan bool)
