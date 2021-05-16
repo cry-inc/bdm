@@ -2,6 +2,8 @@ package bdm
 
 import (
 	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestDefaultLimits(t *testing.T) {
@@ -10,9 +12,7 @@ func TestDefaultLimits(t *testing.T) {
 
 	// Check empty manifest with default empty limits
 	err := CheckManifestLimits(&manifest, &limits)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Add file to manifest
 	manifest.Files = []File{
@@ -24,9 +24,7 @@ func TestDefaultLimits(t *testing.T) {
 
 	// Check non-empty manifest with default limits
 	err = CheckManifestLimits(&manifest, &limits)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 }
 
 func TestCustomLimits(t *testing.T) {
@@ -53,39 +51,29 @@ func TestCustomLimits(t *testing.T) {
 
 	// Check manifest with limits
 	err := CheckManifestLimits(&manifest, &limits)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check invalid file size
 	manifest.Files[0].Object.Size = 1001
 	err = CheckManifestLimits(&manifest, &limits)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 	manifest.Files[0].Object.Size = 1000
 
 	// Check invalid size
 	manifest.Files[1].Object.Size = 1000
 	err = CheckManifestLimits(&manifest, &limits)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 	manifest.Files[1].Object.Size = 200
 
 	// Check invalid path length
 	manifest.Files[0].Path = "file/path/is/to/long.txt"
 	err = CheckManifestLimits(&manifest, &limits)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 	manifest.Files[0].Path = "file1"
 
 	// Check invalid file count
 	newFile := File{Path: "file3", Object: Object{Size: 100, Hash: "ghi"}}
 	manifest.Files = append(manifest.Files, newFile)
 	err = CheckManifestLimits(&manifest, &limits)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 }

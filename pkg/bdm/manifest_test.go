@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func checkName(t *testing.T, name string, valid bool) {
@@ -111,59 +113,39 @@ func TestValidatePublishedManifest(t *testing.T) {
 func TestGenerateManifest(t *testing.T) {
 	testFolder := "testPackage"
 	err := os.MkdirAll(testFolder+"/dir/subdir", os.ModePerm)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	err = ioutil.WriteFile(testFolder+"/dir/subdir/my file äöü 人物.txt", []byte{1, 2, 3}, os.ModePerm)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	manifest, err := GenerateManifest("foo", testFolder)
-	if err != nil || manifest == nil {
-		t.Fatal()
-	}
-
-	if manifest.PackageName != "foo" || manifest.PackageVersion != 0 || len(manifest.Files) != 1 {
-		t.Fatal()
-	}
-
-	if manifest.Files[0].Path != "dir/subdir/my file äöü 人物.txt" ||
-		manifest.Files[0].Object.Size != 3 ||
-		manifest.Files[0].Object.Hash != "b177ec1bf26dfb3b7010d473e6d44713b29b765b99c6e60ecbfae742de496543" {
-		t.Fatal(manifest.Files[0])
-	}
+	util.AssertNoError(t, err)
+	util.AssertEqualString(t, "foo", manifest.PackageName)
+	util.Assert(t, manifest.PackageVersion == 0)
+	util.Assert(t, len(manifest.Files) == 1)
+	util.AssertEqualString(t, "dir/subdir/my file äöü 人物.txt", manifest.Files[0].Path)
+	util.Assert(t, manifest.Files[0].Object.Size == 3)
+	util.AssertEqualString(t, "b177ec1bf26dfb3b7010d473e6d44713b29b765b99c6e60ecbfae742de496543", manifest.Files[0].Object.Hash)
 
 	err = ValidateUnpublishedManifest(manifest)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	err = os.RemoveAll(testFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 }
 
 func TestHashManifest(t *testing.T) {
 	emptyManifest := Manifest{}
 	hash := HashManifest(&emptyManifest)
-	if hash != "381507c20d3226db750821ad83686480a8ea69f56784598587161be18995170f" {
-		t.Fatal(hash)
-	}
+	util.AssertEqualString(t, "381507c20d3226db750821ad83686480a8ea69f56784598587161be18995170f", hash)
 
 	unpublishedManifest := generateUnpublishedManifest()
 	hash = HashManifest(&unpublishedManifest)
-	if hash != "b17a4f899214aac5fcb4924e3e9fe005062baeaf78ea781a1ac39aab76ea07c6" {
-		t.Fatal(hash)
-	}
+	util.AssertEqualString(t, "b17a4f899214aac5fcb4924e3e9fe005062baeaf78ea781a1ac39aab76ea07c6", hash)
 
 	publishedManifest := unpublishedManifest
 	publishedManifest.PackageVersion = 1
 	publishedManifest.Published = 123456
 	hash = HashManifest(&publishedManifest)
-	if hash != "db910b1dba2bf0dc19247346622c3f9f14c8719eda01ea41b71cfaf13626dce2" {
-		t.Fatal(hash)
-	}
+	util.AssertEqualString(t, "db910b1dba2bf0dc19247346622c3f9f14c8719eda01ea41b71cfaf13626dce2", hash)
 }

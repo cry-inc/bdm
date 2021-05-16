@@ -3,6 +3,8 @@ package bdm
 import (
 	"io"
 	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestObjects(t *testing.T) {
@@ -27,11 +29,8 @@ func TestObjects(t *testing.T) {
 	}()
 
 	read, err := ReadObjectsFromStream(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(read) != len(objects) || read[0] != objects[0] || read[1] != objects[1] {
-		t.Fatal(read)
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(read) == len(objects))
+	util.Assert(t, read[0] == objects[0])
+	util.Assert(t, read[1] == objects[1])
 }
