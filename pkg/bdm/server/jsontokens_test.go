@@ -3,6 +3,8 @@ package server
 import (
 	"os"
 	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestTokenDatabase(t *testing.T) {
@@ -15,16 +17,12 @@ func TestTokenDatabase(t *testing.T) {
 
 	// Create new user database
 	users, err := CreateJsonUsers(usersFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer os.RemoveAll(usersFile)
 
 	// Create new token database
 	tokens, err := CreateJsonTokens(tokensFile, users)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer os.RemoveAll(tokensFile)
 
 	// Add new users
@@ -35,20 +33,14 @@ func TestTokenDatabase(t *testing.T) {
 			Writer: true,
 		},
 	}
-	err = users.CreateUser(user1, password)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, users.CreateUser(user1, password))
 	user2 := User{
 		Id: readUser,
 		Roles: Roles{
 			Reader: true,
 		},
 	}
-	err = users.CreateUser(user2, password)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, users.CreateUser(user2, password))
 	user3 := User{
 		Id: adminUser,
 		Roles: Roles{
@@ -57,145 +49,84 @@ func TestTokenDatabase(t *testing.T) {
 			Admin:  true,
 		},
 	}
-	err = users.CreateUser(user3, password)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, users.CreateUser(user3, password))
 
 	// Add read tokens for all users
 	readUserReadToken, err := tokens.CreateToken(readUser, &Roles{Reader: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	writeUserReadToken, err := tokens.CreateToken(writeUser, &Roles{Reader: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	adminUserReadToken, err := tokens.CreateToken(adminUser, &Roles{Reader: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Add write tokens for all users
 	readUserWriteToken, err := tokens.CreateToken(readUser, &Roles{Writer: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	writeUserWriteToken, err := tokens.CreateToken(writeUser, &Roles{Writer: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	adminUserWriteToken, err := tokens.CreateToken(adminUser, &Roles{Writer: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Add admin tokens for all users
 	readUserAdminToken, err := tokens.CreateToken(readUser, &Roles{Admin: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	writeUserAdminToken, err := tokens.CreateToken(writeUser, &Roles{Admin: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	adminUserAdminToken, err := tokens.CreateToken(adminUser, &Roles{Admin: true})
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Get tokens for unknown user
 	tokenList, err := tokens.GetTokens("unknown")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(tokenList) != 0 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(tokenList) == 0)
 
 	// Get user tokens
 	readUserTokens, err := tokens.GetTokens(readUser)
-	if err != nil || len(readUserTokens) != 3 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(readUserTokens) == 3)
 	writeUserTokens, err := tokens.GetTokens(writeUser)
-	if err != nil || len(writeUserTokens) != 3 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(writeUserTokens) == 3)
 	adminUserTokens, err := tokens.GetTokens(adminUser)
-	if err != nil || len(adminUserTokens) != 3 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(adminUserTokens) == 3)
 
 	// Check all the admin users tokens
-	if !containsToken(adminUserReadToken.Id, adminUserTokens) {
-		t.Fatal()
-	}
-	if !containsToken(adminUserWriteToken.Id, adminUserTokens) {
-		t.Fatal()
-	}
-	if !containsToken(adminUserAdminToken.Id, adminUserTokens) {
-		t.Fatal()
-	}
+	util.Assert(t, containsToken(adminUserReadToken.Id, adminUserTokens))
+	util.Assert(t, containsToken(adminUserWriteToken.Id, adminUserTokens))
+	util.Assert(t, containsToken(adminUserAdminToken.Id, adminUserTokens))
 
 	// Check permissions of read user
-	if !tokens.CanRead(readUserReadToken.Id) {
-		t.Fatal()
-	}
-	if tokens.CanWrite(readUserWriteToken.Id) {
-		t.Fatal()
-	}
-	if tokens.IsAdmin(readUserAdminToken.Id) {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.CanRead(readUserReadToken.Id))
+	util.Assert(t, !tokens.CanWrite(readUserWriteToken.Id))
+	util.Assert(t, !tokens.IsAdmin(readUserAdminToken.Id))
 
 	// Check permission of write user
-	if !tokens.CanRead(writeUserReadToken.Id) {
-		t.Fatal()
-	}
-	if !tokens.CanWrite(writeUserWriteToken.Id) {
-		t.Fatal()
-	}
-	if tokens.IsAdmin(writeUserAdminToken.Id) {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.CanRead(writeUserReadToken.Id))
+	util.Assert(t, tokens.CanWrite(writeUserWriteToken.Id))
+	util.Assert(t, !tokens.IsAdmin(writeUserAdminToken.Id))
 
 	// Check permission of admin user
-	if !tokens.CanRead(adminUserReadToken.Id) {
-		t.Fatal()
-	}
-	if !tokens.CanWrite(writeUserWriteToken.Id) {
-		t.Fatal()
-	}
-	if !tokens.IsAdmin(adminUserAdminToken.Id) {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.CanRead(adminUserReadToken.Id))
+	util.Assert(t, tokens.CanWrite(writeUserWriteToken.Id))
+	util.Assert(t, tokens.IsAdmin(adminUserAdminToken.Id))
 
 	// Delete invalid token
 	err = tokens.DeleteToken("invalidtoken")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 
 	// Delete some tokens
 	err = tokens.DeleteToken(readUserReadToken.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	err = tokens.DeleteToken(readUserWriteToken.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	err = tokens.DeleteToken(readUserAdminToken.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check token count again
 	readUserTokens, err = tokens.GetTokens(readUser)
-	if err != nil || len(readUserTokens) != 0 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(readUserTokens) == 0)
 }
 
 func containsToken(tokenId string, tokens []Token) bool {
