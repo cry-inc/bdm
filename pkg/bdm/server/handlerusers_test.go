@@ -2,59 +2,13 @@ package server
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 const usersFile = "./users.json"
-
-type MockResponseWriter struct {
-	status  int
-	headers http.Header
-	data    []byte
-}
-
-func (r *MockResponseWriter) Write(data []byte) (int, error) {
-	r.data = append(r.data, data...)
-	return len(data), nil
-}
-
-func (r *MockResponseWriter) WriteHeader(statusCode int) {
-	r.status = statusCode
-}
-
-func (r *MockResponseWriter) Header() http.Header {
-	return r.headers
-}
-
-func createMockedResponse() *MockResponseWriter {
-	return &MockResponseWriter{
-		headers: make(http.Header),
-	}
-}
-
-func createMockedRequest(method, path string, body *string, authUser *string) *http.Request {
-	url, _ := url.Parse(path)
-	request := http.Request{
-		Method: method,
-		URL:    url,
-		Header: make(http.Header),
-	}
-	if body != nil {
-		request.Body = ioutil.NopCloser(strings.NewReader(*body))
-	}
-	if authUser != nil {
-		authToken := createAuthToken(*authUser, defaultExpiration)
-		request.Header.Add("Cookie", "login="+authToken.Token)
-	}
-	return &request
-}
 
 func prepareTestUsers(t *testing.T, usersFile string) Users {
 	if util.FileExists(usersFile) {
