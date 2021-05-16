@@ -2,75 +2,41 @@ package server
 
 import (
 	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestSimpleTokens(t *testing.T) {
 	tokens := SimpleTokens("read", "write", "admin")
 
 	// Check empty tokens
-	if tokens.CanRead("") {
-		t.Fatal()
-	}
-	if tokens.CanWrite("") {
-		t.Fatal()
-	}
+	util.Assert(t, !tokens.CanRead(""))
+	util.Assert(t, !tokens.CanWrite(""))
+	util.Assert(t, !tokens.IsAdmin(""))
 
 	// Check wrong tokens
-	if tokens.CanRead("wrong") {
-		t.Fatal()
-	}
-	if tokens.CanWrite("wrong") {
-		t.Fatal()
-	}
-	if tokens.CanWrite("read") {
-		t.Fatal()
-	}
-	if tokens.IsAdmin("wrong") {
-		t.Fatal()
-	}
+	util.Assert(t, !tokens.CanRead("wrong"))
+	util.Assert(t, !tokens.CanWrite("wrong"))
+	util.Assert(t, !tokens.IsAdmin("wrong"))
 
 	// Check correct tokens
-	if !tokens.CanRead("read") {
-		t.Fatal()
-	}
-	if !tokens.CanWrite("write") {
-		t.Fatal()
-	}
-	if !tokens.IsAdmin("admin") {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.CanRead("read"))
+	util.Assert(t, tokens.CanWrite("write"))
+	util.Assert(t, tokens.IsAdmin("admin"))
 
 	// Check "inherited" permissions
-	if !tokens.CanRead("write") {
-		t.Fatal("Write token should be also able to read!")
-	}
-	if !tokens.CanRead("admin") {
-		t.Fatal("Admin token should be also able to read!")
-	}
-	if !tokens.CanWrite("admin") {
-		t.Fatal("Admin token should be also able to write!")
-	}
+	util.Assert(t, tokens.CanRead("write"))
+	util.Assert(t, tokens.CanWrite("admin"))
+	util.Assert(t, tokens.CanRead("admin"))
 
 	// Test free for all reading without admin permissions
 	tokens = SimpleTokens("", "write", "")
-	if !tokens.CanRead("") {
-		t.Fatal()
-	}
-	if !tokens.CanWrite("write") {
-		t.Fatal()
-	}
-	if !tokens.CanRead("write") {
-		t.Fatal()
-	}
-	if tokens.CanRead("wrong") {
-		t.Fatal()
-	}
-	if tokens.IsAdmin("") {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.CanRead(""))
+	util.Assert(t, tokens.CanWrite("write"))
+	util.Assert(t, tokens.CanRead("write"))
+	util.Assert(t, !tokens.CanRead("wrong"))
+	util.Assert(t, !tokens.IsAdmin(""))
 
 	// User mode is not supported
-	if !tokens.NoUserMode() {
-		t.Fatal()
-	}
+	util.Assert(t, tokens.NoUserMode())
 }

@@ -3,53 +3,35 @@ package server
 import (
 	"testing"
 	"time"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestJwtEndToEnd(t *testing.T) {
 	// Generate a JWT
 	token := createAuthToken("foo@bar.com", defaultExpiration)
-	if token.UserId != "foo@bar.com" {
-		t.Fatal(token)
-	}
-	if time.Now().After(token.Expires) {
-		t.Fatal(token)
-	}
-	if len(token.Token) == 0 {
-		t.Fatal(token)
-	}
+	util.AssertEqualString(t, "foo@bar.com", token.UserId)
+	util.Assert(t, time.Now().Before(token.Expires))
+	util.Assert(t, len(token.Token) > 0)
 
 	// Parse & Validate JWT token and extract user
 	readToken, err := readAuthToken(token.Token)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if readToken.Token != token.Token {
-		t.Fatal(readToken)
-	}
-	if readToken.UserId != "foo@bar.com" {
-		t.Fatal(readToken)
-	}
-	if readToken.Expires.Equal(token.Expires) {
-		t.Fatal(readToken)
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, readToken.Token == token.Token)
+	util.AssertEqualString(t, "foo@bar.com", readToken.UserId)
+	util.Assert(t, readToken.Expires.Unix() == token.Expires.Unix())
 }
 
 func TestGetUserIdFromJwt(t *testing.T) {
 	// Invalid token layout without two dots
 	_, err := readAuthToken("abc")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 
 	// Invalid base64 data in signature part
 	_, err = readAuthToken("0.a.a")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 
 	// Invalid signature
 	_, err = readAuthToken("0.a.eyJmb28iOiAiYmFyIn0=")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 }

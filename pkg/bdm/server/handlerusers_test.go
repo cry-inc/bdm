@@ -11,25 +11,14 @@ import (
 const usersFile = "./users.json"
 
 func prepareTestUsers(t *testing.T, usersFile string) Users {
-	if util.FileExists(usersFile) {
-		os.Remove(usersFile)
-	}
 	users, err := CreateJsonUsers(usersFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	err = users.CreateUser(User{Id: "reader", Roles: Roles{Reader: true}}, "readerpassword")
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	err = users.CreateUser(User{Id: "writer", Roles: Roles{Writer: true}}, "writerpassword")
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	err = users.CreateUser(User{Id: "admin", Roles: Roles{Admin: true}}, "adminpassword")
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	return users
 }
 
@@ -41,46 +30,27 @@ func TestUsersGetHandler(t *testing.T) {
 	request := createMockedRequest("GET", "/users", nil, nil)
 	response := createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 403 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 403)
 
 	authUser := "writer"
 	request = createMockedRequest("GET", "/users", nil, &authUser)
 	response = createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 401 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 401)
 
 	authUser = "admin"
 	request = createMockedRequest("GET", "/users", nil, &authUser)
 	response = createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 0)
 
 	var userList []string
 	err := json.Unmarshal(response.data, &userList)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(userList) != 3 {
-		t.Fatal()
-	}
-	if userList[0] != "reader" {
-		t.Fatal()
-	}
-	if userList[1] != "writer" {
-		t.Fatal()
-	}
-	if userList[2] != "admin" {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(userList) == 3)
+	util.Assert(t, userList[0] == "reader")
+	util.Assert(t, userList[1] == "writer")
+	util.Assert(t, userList[2] == "admin")
 }
 
 func TestUserCreateGetDelete(t *testing.T) {
@@ -93,53 +63,36 @@ func TestUserCreateGetDelete(t *testing.T) {
 	request := createMockedRequest("POST", "/users", &body, &authUser)
 	response := createMockedResponse()
 	router.ServeHTTP(response, request)
+	util.Assert(t, response.status == 0)
 
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
 	user, err := users.GetUser("newuser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if user.Reader || user.Writer || user.Admin {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, !user.Reader)
+	util.Assert(t, !user.Writer)
+	util.Assert(t, !user.Admin)
 
 	authUser = "admin"
 	request = createMockedRequest("GET", "/users/newuser", nil, &authUser)
 	response = createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 0)
 
 	var parsedUser User
 	err = json.Unmarshal(response.data, &parsedUser)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if parsedUser.Id != "newuser" {
-		t.Fatal()
-	}
-	if parsedUser.Reader || parsedUser.Writer || parsedUser.Admin {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, parsedUser.Id == "newuser")
+	util.Assert(t, !parsedUser.Reader)
+	util.Assert(t, !parsedUser.Writer)
+	util.Assert(t, !parsedUser.Admin)
 
 	authUser = "admin"
 	request = createMockedRequest("DELETE", "/users/newuser", nil, &authUser)
 	response = createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 0)
 
 	_, err = users.GetUser("newuser")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 }
 
 func TestUserPatchHandlers(t *testing.T) {
@@ -152,27 +105,17 @@ func TestUserPatchHandlers(t *testing.T) {
 	request := createMockedRequest("PATCH", "/users/admin/password", &body, &authUser)
 	response := createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
-	if !users.Authenticate("admin", "newadminpassword") {
-		t.Fatal()
-	}
+	util.Assert(t, response.status == 0)
+	util.Assert(t, users.Authenticate("admin", "newadminpassword"))
 
 	body = `{"Reader": true, "Writer": true, "Admin": false}`
 	request = createMockedRequest("PATCH", "/users/admin/roles", &body, &authUser)
 	response = createMockedResponse()
 	router.ServeHTTP(response, request)
-
-	if response.status != 0 {
-		t.Fatal(response.status)
-	}
+	util.Assert(t, response.status == 0)
 	roles, err := users.GetRoles("admin")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if roles.Admin || !roles.Reader || !roles.Writer {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, roles.Reader)
+	util.Assert(t, roles.Writer)
+	util.Assert(t, !roles.Admin)
 }

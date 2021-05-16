@@ -3,6 +3,8 @@ package server
 import (
 	"os"
 	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 func TestUserDatabase(t *testing.T) {
@@ -13,24 +15,16 @@ func TestUserDatabase(t *testing.T) {
 
 	// Create new database
 	users, err := CreateJsonUsers(usersFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer os.RemoveAll(usersFile)
 
 	// User management is available
-	if !users.Available() {
-		t.Fatal()
-	}
+	util.Assert(t, users.Available())
 
 	// New DB should be empty
 	userList, err := users.GetUsers()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(userList) != 0 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(userList) == 0)
 
 	// Prepare a new user
 	user := User{
@@ -42,99 +36,69 @@ func TestUserDatabase(t *testing.T) {
 	}
 	// Password not long enough
 	err = users.CreateUser(user, "short")
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
+
 	// Use a valid password
 	err = users.CreateUser(user, userPw)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Adding the same user again leads to an error
 	err = users.CreateUser(user, userPw)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 
 	// DB is no longer empty
 	userList, err = users.GetUsers()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(userList) != 1 {
-		t.Fatal()
-	}
-	if userList[0] != userName {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(userList) == 1)
+	util.AssertEqualString(t, userName, userList[0])
 
 	// Check if validation is possible
-	if !users.Authenticate(userName, userPw) {
-		t.Fatal()
-	}
-	if users.Authenticate(userName, "wrongpw") {
-		t.Fatal()
-	}
+	util.Assert(t, users.Authenticate(userName, userPw))
+	util.Assert(t, !users.Authenticate(userName, "wrongpw"))
 
 	// Check get and set roles
 	roles, err := users.GetRoles(userName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
+
 	// User should have read & write permission
-	if !roles.Reader || !roles.Writer {
-		t.Fatal()
-	}
+	util.Assert(t, roles.Reader)
+	util.Assert(t, roles.Writer)
+	util.Assert(t, !roles.Admin)
+
 	// Update roles
 	roles.Writer = false
 	roles.Reader = false
+	roles.Admin = true
 	err = users.SetRoles(userName, roles)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
+
 	// Get new roles
 	roles, err = users.GetRoles(userName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
+
 	// User should no longer have read & write permission
-	if roles.Reader || roles.Writer {
-		t.Fatal()
-	}
+	util.Assert(t, !roles.Reader)
+	util.Assert(t, !roles.Writer)
+	util.Assert(t, roles.Admin)
 
 	// Change password
 	err = users.ChangePassword(userName, newPw)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Old PW is no longer valid
-	if users.Authenticate(userName, userPw) {
-		t.Fatal()
-	}
-	if !users.Authenticate(userName, newPw) {
-		t.Fatal()
-	}
+	util.Assert(t, !users.Authenticate(userName, userPw))
+	util.Assert(t, users.Authenticate(userName, newPw))
 
 	// Delete the user
 	err = users.DeleteUser(userName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// New DB should be empty again
 	userList, err = users.GetUsers()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(userList) != 0 {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, len(userList) == 0)
 
 	// Deleting a non-existent user should cause an error
 	err = users.DeleteUser(userName)
-	if err == nil {
-		t.Fatal()
-	}
+	util.AssertError(t, err)
 }
