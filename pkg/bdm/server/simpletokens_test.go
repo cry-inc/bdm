@@ -7,7 +7,7 @@ import (
 )
 
 func TestSimpleTokens(t *testing.T) {
-	tokens := SimpleTokens("read", "write", "admin")
+	tokens := CreateSimpleTokens("read", "write", "admin")
 
 	// Check empty tokens
 	util.Assert(t, !tokens.CanRead(""))
@@ -30,7 +30,7 @@ func TestSimpleTokens(t *testing.T) {
 	util.Assert(t, tokens.CanRead("admin"))
 
 	// Test free for all reading without admin permissions
-	tokens = SimpleTokens("", "write", "")
+	tokens = CreateSimpleTokens("", "write", "")
 	util.Assert(t, tokens.CanRead(""))
 	util.Assert(t, tokens.CanWrite("write"))
 	util.Assert(t, tokens.CanRead("write"))

@@ -119,7 +119,7 @@ func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, c
 	}
 
 	users := server.CreateNoUsers()
-	tokens := server.SimpleTokens("", writeToken, "")
+	tokens := server.CreateSimpleTokens("", writeToken, "")
 	router := server.CreateRouter(packageStore, limits, users, tokens)
 
 	p := uint16(port)
