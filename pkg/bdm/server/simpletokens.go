@@ -8,13 +8,13 @@ type simpleTokens struct {
 	adminToken string
 }
 
-// SimpleTokens returns a simple token implementation that allows reading
+// CreateSimpleTokens returns a simple token implementation that allows reading
 // and uploading based on two single shared secret tokens. An empty token means no
 // permission required and everyone is allowed for the corresponding action.
 // Please keep in mind that a writing token will also always grant read permission!
 // Likewise, an admin token always includes reading and writing permission.
 // For security reasons an empty admin token means admin permissions are disabled.
-func SimpleTokens(readToken, writeToken, adminToken string) Tokens {
+func CreateSimpleTokens(readToken, writeToken, adminToken string) Tokens {
 	tokens := simpleTokens{readToken, writeToken, adminToken}
 	return &tokens
 }
