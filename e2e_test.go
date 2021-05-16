@@ -48,33 +48,23 @@ func TestServerClient(t *testing.T) {
 
 	// Download a small test package
 	err := client.DownloadPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, false)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check package content
 	err = client.CheckPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Create dirty file and download again with clean mode enabled
 	const dirtyFile = outputFolder + "/dirty.dat"
 	ioutil.WriteFile(dirtyFile, []byte{0, 1, 2}, os.ModePerm)
 	err = client.DownloadPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if util.FileExists(dirtyFile) {
-		t.Fatal()
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, !util.FileExists(dirtyFile))
 
 	// Download again with caching enabled
 	os.RemoveAll(outputFolder)
 	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, false)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Stop server
 	stopTestingServer(server, stopped)
@@ -82,15 +72,11 @@ func TestServerClient(t *testing.T) {
 	// Try to restore package from cache only
 	os.RemoveAll(outputFolder)
 	err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check using the cache only
 	err = client.CheckCachedPackage(outputFolder, cacheFolder, serverURL, readToken, packageNameSmall, 1, true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 }
 
 func TestServerJsonHandlers(t *testing.T) {
@@ -174,36 +160,24 @@ func TestServerGzipFileHandler(t *testing.T) {
 	// Request file under test
 	urlPath := "/files/bar/1/e22e4bb46ad3e963fe059dcd969c036bd556a020d1de2d8cbd393a19ee74eb8c/testfile.dat"
 	body, headers, err := httpGet(urlPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// File is big enough to trigger gzip compression
-	if headers["Content-Encoding"][0] != "gzip" {
-		t.Fatal(headers)
-	}
+	util.AssertEqualString(t, "gzip", headers["Content-Encoding"][0])
 
 	// File contains a number of sequential files and should compress well
-	if len(headers) >= 1024 {
-		t.Fatal()
-	}
+	util.Assert(t, len(body) < 1024)
 
 	// Decompress gzip encoded data
 	buf := bytes.NewBuffer(body)
 	reader, err := gzip.NewReader(buf)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer reader.Close()
 	decompressed, err := ioutil.ReadAll(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check decompressed data for original length
-	if len(decompressed) != 1024 {
-		t.Fatal(len(decompressed))
-	}
+	util.Assert(t, len(decompressed) == 1024)
 }
 
 func TestServerZipHandler(t *testing.T) {
@@ -221,61 +195,39 @@ func TestServerZipHandler(t *testing.T) {
 	// Request ZIP of package
 	urlPath := "/zip/foo/1"
 	body, headers, err := httpGet(urlPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Content type must be ZIP
-	if headers["Content-Type"][0] != "application/zip" {
-		t.Fatal(headers)
-	}
+	util.AssertEqualString(t, "application/zip", headers["Content-Type"][0])
 
 	// Download name must be <package>.<version>.zip
-	if headers["Content-Disposition"][0] != "attachment; filename=\"foo.v1.zip\"" {
-		t.Fatal(headers)
-	}
+	util.AssertEqualString(t, "attachment; filename=\"foo.v1.zip\"", headers["Content-Disposition"][0])
 
 	// Open returned body as ZIP archive
 	zipReader, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Read all files from ZIP
 	for _, zipFile := range zipReader.File {
 		file, err := zipFile.Open()
-		if err != nil {
-			t.Fatal(err)
-		}
+		util.AssertNoError(t, err)
 		defer file.Close()
 		unzippedFileData, err := ioutil.ReadAll(file)
-		if err != nil {
-			t.Fatal(err)
-		}
+		util.AssertNoError(t, err)
 		path := filepath.Join(unzipFolder, zipFile.Name)
 		folder := filepath.Dir(path)
 		err = os.MkdirAll(folder, os.ModePerm)
-		if err != nil {
-			t.Fatal(err)
-		}
+		util.AssertNoError(t, err)
 		err = ioutil.WriteFile(path, unzippedFileData, os.ModePerm)
-		if err != nil {
-			t.Fatal(err)
-		}
+		util.AssertNoError(t, err)
 	}
 
 	// Generate manifests for original and unzipped folder and compare
 	manifestOrg, err := bdm.GenerateManifest(packageNameSmall, packageFolderSmall)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	manifestZipped, err := bdm.GenerateManifest(packageNameSmall, unzipFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if manifestOrg.Hash != manifestZipped.Hash {
-		t.Fatal(manifestOrg, manifestZipped)
-	}
+	util.AssertNoError(t, err)
+	util.AssertEqualString(t, manifestOrg.Hash, manifestZipped.Hash)
 }
 
 func TestServerStaticHandler(t *testing.T) {
@@ -286,42 +238,28 @@ func TestServerStaticHandler(t *testing.T) {
 	// Request UI
 	urlPath := "/"
 	body, headers, err := httpGet(urlPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Content type must be HTML
-	if !strings.Contains(headers["Content-Type"][0], "text/html") {
-		t.Fatal(headers)
-	}
+	util.Assert(t, strings.Contains(string(headers["Content-Type"][0]), "text/html"))
 
 	// Check for HTML content
-	if len(body) <= 0 || !strings.Contains(string(body), "<html") {
-		t.Fatal(body)
-	}
+	util.Assert(t, len(body) > 0)
+	util.Assert(t, strings.Contains(string(body), "</html>"))
 
 	// Request favicon
 	urlPath = "/favicon.ico"
 	body, headers, err = httpGet(urlPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	// Check content type
-	if headers["Content-Type"][0] != "image/x-icon" {
-		t.Fatal(headers)
-	}
-
-	if len(body) <= 0 {
-		t.Fatal(body)
-	}
+	util.AssertEqualString(t, "image/x-icon", headers["Content-Type"][0])
+	util.Assert(t, len(body) > 0)
 }
 
 func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	packageStore, err := store.New(storeFolder)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 
 	limits := bdm.ManifestLimits{}
 	users := server.CreateNoUsers()
@@ -354,12 +292,10 @@ func stopTestingServer(server *http.Server, stopped chan bool) {
 
 func publishSmallTestPackage(t *testing.T) {
 	manifest, err := client.UploadPackage(packageNameSmall, packageFolderSmall, serverURL, writeToken)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if manifest.PackageVersion != 1 || manifest.Published == 0 || len(manifest.Files) <= 0 {
-		t.Fatal(manifest)
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, manifest.PackageVersion == 1)
+	util.Assert(t, manifest.Published != 0)
+	util.Assert(t, len(manifest.Files) > 0)
 }
 
 func generateTestFile(filePath string, size, seed int) error {
@@ -383,16 +319,12 @@ func generateTestFile(filePath string, size, seed int) error {
 func publishBigTestPackage(t *testing.T) {
 	os.MkdirAll(packageFolderBig, os.ModePerm)
 	err := generateTestFile(filepath.Join(packageFolderBig, "testfile.dat"), 1024, 666)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	manifest, err := client.UploadPackage(packageNameBig, packageFolderBig, serverURL, writeToken)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if manifest.PackageVersion != 1 || manifest.Published == 0 || len(manifest.Files) <= 0 {
-		t.Fatal(manifest)
-	}
+	util.AssertNoError(t, err)
+	util.Assert(t, manifest.PackageVersion == 1)
+	util.Assert(t, manifest.Published != 0)
+	util.Assert(t, len(manifest.Files) > 0)
 }
 
 func httpGet(path string) ([]byte, http.Header, error) {
@@ -419,25 +351,14 @@ func httpGet(path string) ([]byte, http.Header, error) {
 
 func httpGetStatusCode(t *testing.T, path string, statusCode int) {
 	resp, err := http.Get("http://127.0.0.1:2323" + path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	util.AssertNoError(t, err)
 	defer resp.Body.Close()
-	if resp.StatusCode != statusCode {
-		t.Fatal(resp.StatusCode)
-	}
+	util.Assert(t, resp.StatusCode == statusCode)
 }
 
 func getAndCompareString(t *testing.T, path, expectedType, expectedStr string) {
 	body, header, err := httpGet(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if header["Content-Type"][0] != expectedType {
-		t.Fatal(header)
-	}
-	str := string(body)
-	if str != expectedStr {
-		t.Fatal(str)
-	}
+	util.AssertNoError(t, err)
+	util.AssertEqualString(t, expectedType, header["Content-Type"][0])
+	util.AssertEqualString(t, expectedStr, string(body))
 }
