@@ -7,16 +7,16 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-func TestUserDatabase(t *testing.T) {
+func TestCreateJsonUsers(t *testing.T) {
 	const userName = "foo@bar.com"
 	const userPw = "secretpw"
 	const newPw = "newsecretpw"
 	const usersFile = "users.json"
 
 	// Create new database
+	defer os.RemoveAll(usersFile)
 	users, err := CreateJsonUsers(usersFile)
 	util.AssertNoError(t, err)
-	defer os.RemoveAll(usersFile)
 
 	// User management is available
 	util.Assert(t, users.Available())
@@ -101,4 +101,19 @@ func TestUserDatabase(t *testing.T) {
 	// Deleting a non-existent user should cause an error
 	err = users.DeleteUser(userName)
 	util.AssertError(t, err)
+}
+
+func TestJsonUserIds(t *testing.T) {
+	const validPassword = "mySecurePassword"
+
+	defer os.RemoveAll(usersFile)
+	users, err := CreateJsonUsers(usersFile)
+	util.AssertNoError(t, err)
+
+	util.AssertNoError(t, users.CreateUser(User{Id: "foo"}, validPassword))
+	util.AssertNoError(t, users.CreateUser(User{Id: "FOO"}, validPassword))
+	util.AssertNoError(t, users.CreateUser(User{Id: "abc123ABC@-._"}, validPassword))
+	util.AssertNoError(t, users.CreateUser(User{Id: "abc-123@A_B_C.com"}, validPassword))
+	util.AssertError(t, users.CreateUser(User{Id: "foo::bar"}, validPassword))
+	util.AssertError(t, users.CreateUser(User{Id: "<foo>"}, validPassword))
 }
