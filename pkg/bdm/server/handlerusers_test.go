@@ -8,23 +8,9 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const usersFile = "./users.json"
-
-func prepareTestUsers(t *testing.T, usersFile string) Users {
-	users, err := CreateJsonUsers(usersFile)
-	util.AssertNoError(t, err)
-	err = users.CreateUser(User{Id: "reader", Roles: Roles{Reader: true}}, "readerpassword")
-	util.AssertNoError(t, err)
-	err = users.CreateUser(User{Id: "writer", Roles: Roles{Writer: true}}, "writerpassword")
-	util.AssertNoError(t, err)
-	err = users.CreateUser(User{Id: "admin", Roles: Roles{Admin: true}}, "adminpassword")
-	util.AssertNoError(t, err)
-	return users
-}
-
 func TestUsersGetHandler(t *testing.T) {
-	users := prepareTestUsers(t, usersFile)
-	defer os.Remove(usersFile)
+	users := prepareTestUsers(t, "users.json")
+	defer os.Remove("users.json")
 	router := CreateRouter(nil, nil, users, nil)
 
 	request := createMockedRequest("GET", "/users", nil, nil)
@@ -54,8 +40,8 @@ func TestUsersGetHandler(t *testing.T) {
 }
 
 func TestUserCreateGetDelete(t *testing.T) {
-	users := prepareTestUsers(t, usersFile)
-	defer os.Remove(usersFile)
+	users := prepareTestUsers(t, "users.json")
+	defer os.Remove("users.json")
 	router := CreateRouter(nil, nil, users, nil)
 
 	authUser := "admin"
@@ -96,8 +82,8 @@ func TestUserCreateGetDelete(t *testing.T) {
 }
 
 func TestUserPatchHandlers(t *testing.T) {
-	users := prepareTestUsers(t, usersFile)
-	defer os.Remove(usersFile)
+	users := prepareTestUsers(t, "users.json")
+	defer os.Remove("users.json")
 	router := CreateRouter(nil, nil, users, nil)
 
 	authUser := "admin"

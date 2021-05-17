@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"testing"
+
+	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
 type mockResponseWriter struct {
@@ -47,4 +50,16 @@ func createMockedRequest(method, path string, body *string, authUser *string) *h
 		request.Header.Add("Cookie", "login="+authToken.Token)
 	}
 	return &request
+}
+
+func prepareTestUsers(t *testing.T, usersFile string) Users {
+	users, err := CreateJsonUsers(usersFile)
+	util.AssertNoError(t, err)
+	err = users.CreateUser(User{Id: "reader", Roles: Roles{Reader: true}}, "readerpassword")
+	util.AssertNoError(t, err)
+	err = users.CreateUser(User{Id: "writer", Roles: Roles{Writer: true}}, "writerpassword")
+	util.AssertNoError(t, err)
+	err = users.CreateUser(User{Id: "admin", Roles: Roles{Admin: true}}, "adminpassword")
+	util.AssertNoError(t, err)
+	return users
 }
