@@ -8,6 +8,17 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
+func hasUser(users []string, user string) bool {
+	found := false
+	for _, u := range users {
+		if u == user {
+			found = true
+			break
+		}
+	}
+	return found
+}
+
 func TestUsersGetHandler(t *testing.T) {
 	users := prepareTestUsers(t, "users.json")
 	defer os.Remove("users.json")
@@ -34,9 +45,9 @@ func TestUsersGetHandler(t *testing.T) {
 	err := json.Unmarshal(response.data, &userList)
 	util.AssertNoError(t, err)
 	util.Assert(t, len(userList) == 3)
-	util.Assert(t, userList[0] == "reader")
-	util.Assert(t, userList[1] == "writer")
-	util.Assert(t, userList[2] == "admin")
+	util.Assert(t, hasUser(userList, "reader"))
+	util.Assert(t, hasUser(userList, "writer"))
+	util.Assert(t, hasUser(userList, "admin"))
 }
 
 func TestUserCreateGetDelete(t *testing.T) {
