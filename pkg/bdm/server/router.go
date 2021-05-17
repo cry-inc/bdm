@@ -80,5 +80,12 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, users Us
 	// Change user roles
 	router.Patch("/users/{user}/roles", createUserPatchRolesHandler(users))
 
+	// List all tokens for a user
+	router.Get("/users/{user}/tokens", createTokensGetHandler(users, tokens))
+	// Create a new token for a user
+	router.Post("/users/{user}/tokens", createTokensPostHandler(users, tokens))
+	// Delete a token from a user
+	router.Delete("/users/{user}/tokens/{token}", createTokensDeleteHandler(users, tokens))
+
 	return router
 }
