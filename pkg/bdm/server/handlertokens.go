@@ -57,6 +57,12 @@ func createTokensPostHandler(users Users, tokens Tokens) http.HandlerFunc {
 			return
 		}
 
+		// Make sure there is at least one role
+		if !tokenRoles.Admin && !tokenRoles.Writer && !tokenRoles.Reader {
+			http.Error(writer, "Requested no role", http.StatusBadRequest)
+			return
+		}
+
 		token, err := tokens.CreateToken(paramUser.Id, &tokenRoles)
 		if err != nil {
 			log.Print(fmt.Errorf("failed to create new token: %w", err))

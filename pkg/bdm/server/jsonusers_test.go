@@ -105,6 +105,7 @@ func TestCreateJsonUsers(t *testing.T) {
 
 func TestJsonUserIds(t *testing.T) {
 	const validPassword = "mySecurePassword"
+	const usersFile = "users.json"
 
 	defer os.RemoveAll(usersFile)
 	users, err := CreateJsonUsers(usersFile)
