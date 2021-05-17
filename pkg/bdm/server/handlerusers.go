@@ -6,60 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
-
-type UserHandlerFunc func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User)
-
-func extractUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
-		authUser, err := getCurrentUser(req, users)
-		if err != nil {
-			http.Error(writer, "Log in required", http.StatusForbidden)
-			return
-		}
-
-		var paramUser *User = nil
-		paramUserId := chi.URLParam(req, "user")
-		if len(paramUserId) > 0 {
-			paramUser, err = users.GetUser(paramUserId)
-			if err != nil {
-				http.Error(writer, "User from URL does not exist", http.StatusNotFound)
-				return
-			}
-		}
-
-		handler(writer, req, authUser, paramUser)
-	}
-}
-
-func enforceAdminUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
-	return extractUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		if !authUser.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		handler(writer, req, authUser, paramUser)
-	})
-}
-
-func enforceAdminOrMatchUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
-	return extractUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		if authUser.Id != paramUser.Id && !authUser.Admin {
-			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
-			return
-		}
-
-		handler(writer, req, authUser, paramUser)
-	})
-}
 
 func createUsersGetHandler(users Users) http.HandlerFunc {
 	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
