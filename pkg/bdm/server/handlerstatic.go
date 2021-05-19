@@ -23,7 +23,7 @@ func createStaticHandler() http.HandlerFunc {
 		}
 		ext := filepath.Ext(path)
 		if len(ext) > 0 {
-			mimeType := mime.TypeByExtension("." + ext)
+			mimeType := mime.TypeByExtension(ext)
 			if len(mimeType) > 0 {
 				w.Header().Set("Content-Type", mimeType)
 			}
