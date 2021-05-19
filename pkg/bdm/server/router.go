@@ -14,8 +14,7 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, users Us
 
 	// Static assets for HTML UI
 	staticHandler := createStaticHandler()
-	router.Get("/", staticHandler)
-	router.Get("/favicon.ico", staticHandler)
+	router.Get("/*", staticHandler)
 
 	// Download package files as ZIP
 	router.Get("/zip/{name}/{version}", createZipHandler(packageStore, tokens))
