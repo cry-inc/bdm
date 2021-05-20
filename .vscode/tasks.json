@@ -70,24 +70,32 @@
         {
           "label": "coverage",
           "dependsOrder": "sequence",
+          "group": "build",
           "dependsOn": ["collect coverage", "show coverage"]
         },
         {
             "label": "gocyclo",
             "type": "shell",
-            "group": "none",
+            "group": "build",
             "command": "gocyclo -over 15 ."
         },
         {
             "label": "static check",
             "type": "shell",
-            "group": "none",
+            "group": "build",
             "command": "staticcheck github.com/cry-inc/bdm/..."
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "group": "build",
+            "command": "go clean"
         },
         {
           "label": "full build & test",
           "dependsOrder": "sequence",
-          "dependsOn": ["build", "test", "build c lib", "build c example"]
+          "group": "build",
+          "dependsOn": ["clean", "build", "test", "build c lib", "build c example"]
         }
     ]
 }
