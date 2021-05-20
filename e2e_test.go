@@ -253,7 +253,9 @@ func TestServerStaticHandler(t *testing.T) {
 	util.AssertNoError(t, err)
 
 	// Check content type
-	util.AssertEqualString(t, "image/x-icon", headers["Content-Type"][0])
+	mimeType := headers["Content-Type"][0]
+	// Since Go also checks the OS type lists we might get different results on different systems
+	util.Assert(t, mimeType == "image/x-icon" || mimeType == "image/vnd.microsoft.icon")
 	util.Assert(t, len(body) > 0)
 }
 
