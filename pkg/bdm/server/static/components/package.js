@@ -1,3 +1,5 @@
+import * as Helper from '../helper.js';
+
 export default {
 	props: ['package', 'version'],
 	data() {
@@ -9,17 +11,9 @@ export default {
 	},
 	async created() {
 		const response = await fetch('manifests/' + this.package + '/' + this.version);
-		const manifest = await response.json();
-		this.manifest = manifest;
-		this.size = 0;
-		manifest.Files.forEach(file => {
-			this.size += file.Object.Size;
-			file.Name = file.Path;
-			const lastSlash = file.Name.lastIndexOf('/');
-			if (lastSlash !== -1) {
-				file.Name = file.Name.substr(lastSlash + 1);
-			}
-		});
+		this.manifest = await response.json();
+		this.size = Helper.getPackageSize(this.manifest);
+		Helper.addFileNames(this.manifest);
 	},
 	template: `
 		<div>
