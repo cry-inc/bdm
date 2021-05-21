@@ -2,6 +2,7 @@ import Packages from './components/packages.js'
 import Versions from './components/versions.js'
 import Package from './components/package.js'
 import PackageDiff from './components/packagediff.js'
+import Helper from './helper.js'
 
 const router = VueRouter.createRouter({
 	history: VueRouter.createWebHashHistory(),
@@ -17,15 +18,7 @@ const app = Vue.createApp({});
 app.use(router);
 app.config.globalProperties.$filters = {
 	size(bytes) {
-		if (bytes < 1024) {
-			return bytes + " byte";
-		} else if (bytes < 1000 * 1000) {
-			return Math.round(bytes / 1000) + " kB";
-		} else if (bytes < 1000 * 1000 * 1000) {
-			return Math.round(bytes / (1000 * 1000)) + " MB";
-		} else {
-			return Math.round(bytes / (1000 * 1000 * 1000)) + " GB";
-		}
+		return Helper.getSizeString(bytes);
 	},
 	date(unixTime) {
 		return new Date(unixTime * 1000).toLocaleString();

@@ -1,4 +1,4 @@
-import * as Helper from '../helper.js';
+import Helper from '../helper.js';
 
 export default {
 	props: ['package', 'version'],
@@ -59,7 +59,7 @@ export default {
 				</tr>
 				<tr v-for="file in manifest.Files">
 					<td><a v-bind:href="'files/' + package + '/' + version + '/' + file.Object.Hash + '/' + file.Name">{{file.Path}}</a></td>
-					<td>{{file.Object.Size}}</td>
+					<td>{{$filters.size(file.Object.Size)}}</td>
 					<td>{{file.Object.Hash}}</td>
 				</tr>
 			</table>
