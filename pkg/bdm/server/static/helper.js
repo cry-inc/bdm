@@ -15,4 +15,16 @@ function addFileNames(manifest) {
 	});
 }
 
-export {getPackageSize, addFileNames};
+function getSizeString(bytes) {
+	if (bytes < 1024) {
+		return bytes + " byte";
+	} else if (bytes < 1000 * 1000) {
+		return Math.round(bytes / 1000) + " kB";
+	} else if (bytes < 1000 * 1000 * 1000) {
+		return Math.round(bytes / (1000 * 1000)) + " MB";
+	} else {
+		return Math.round(bytes / (1000 * 1000 * 1000)) + " GB";
+	}
+}
+
+export default {getPackageSize, addFileNames, getSizeString};
