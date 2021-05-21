@@ -1,0 +1,6 @@
+body {font-family: sans-serif; margin: 10px}
+table {width: 100%}
+th, td {padding: 5px; border: 1px solid #eee}
+th {text-align: left; background-color: #fafafa}
+a {color: #007bff; text-decoration: none}
+a:hover {text-decoration: underline}
