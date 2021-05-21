@@ -46,7 +46,10 @@ export default {
 			</table>
 			<p>
 				<a v-bind:href="'zip/' + package + '/' + version">Download Package as ZIP</a><br>
-				<a v-bind:href="'manifests/' + package + '/' + version">Package Manifest JSON</a>
+				<a v-bind:href="'manifests/' + package + '/' + version">Package Manifest JSON</a><br>
+				<router-link v-if="version > 1" v-bind:to="'/' + package + '/' + version + '/diff/' + (version - 1)">
+					Compare with Previous Version
+				</router-link>
 			</p>
 			<table>
 				<tr>

@@ -1,6 +1,7 @@
 import Packages from './components/packages.js'
 import Versions from './components/versions.js'
 import Package from './components/package.js'
+import PackageDiff from './components/packagediff.js'
 
 const router = VueRouter.createRouter({
 	history: VueRouter.createWebHashHistory(),
@@ -8,6 +9,7 @@ const router = VueRouter.createRouter({
 		{path: '/', component: Packages},
 		{path: '/:package', component: Versions, props: true},
 		{path: '/:package/:version', component: Package, props: true},
+		{path: '/:package/:versionA/diff/:versionB', component: PackageDiff, props: true},
 	]
 });
 
