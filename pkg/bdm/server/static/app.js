@@ -1,7 +1,7 @@
 import Packages from './components/packages.js'
 import Versions from './components/versions.js'
 import Package from './components/package.js'
-import PackageDiff from './components/packagediff.js'
+import Compare from './components/compare.js'
 import Breadcrumbs from './components/breadcrumbs.js'
 import Helper from './helper.js'
 
@@ -11,7 +11,7 @@ const router = VueRouter.createRouter({
 		{path: '/', name: 'packages', component: Packages},
 		{path: '/:package', name: 'versions', component: Versions, props: true},
 		{path: '/:package/:version', name: 'package', component: Package, props: true},
-		{path: '/:package/:versionA/diff/:versionB', name: 'diff', component: PackageDiff, props: true},
+		{path: '/:package/:version/compare/:versionOther', name: 'compare', component: Compare, props: true},
 	]
 });
 
