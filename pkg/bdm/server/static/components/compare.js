@@ -2,6 +2,9 @@ export default {
 	props: ['package', 'version', 'versionOther'],
 	data() {
 		return {
+			loaded: false,
+			manifest: undefined,
+			manifestOther: undefined,
 			addedFiles: [],
 			deletedFiles: [],
 			modifiedFiles: []
@@ -10,36 +13,44 @@ export default {
 	async created() {
 		const response = await fetch('manifests/' + this.package + '/' + this.version);
 		const responseOther = await fetch('manifests/' + this.package + '/' + this.versionOther);
-		this.manifest = await response.json();
-		this.manifestOther = await responseOther.json();
-
-		this.manifest.Files.forEach(file => {
-			const found = this.manifestOther.Files.filter(
-				fileOther => fileOther.Path === file.Path).length > 0;
-			if (!found) {
-				this.addedFiles.push(file);
-			}
-		});
-		this.manifestOther.Files.forEach(fileOther => {
-			const found = this.manifest.Files.filter(
-				file => fileOther.Path === file.Path).length > 0;
-			if (!found) {
-				this.deletedFiles.push(fileOther);
-			}
-		});
-		this.manifestOther.Files.forEach(fileOther => {
-			const file = this.manifest.Files.find(
-				file => fileOther.Path === file.Path &&
-				fileOther.Object.Hash !== file.Object.Hash);
-			if (file) {
-				this.modifiedFiles.push({new: file, old: fileOther});
-			}
-		});
+		this.manifest = response.ok ? await response.json() : null;
+		this.manifestOther = responseOther.ok ? await responseOther.json() : null;
+		if (this.manifest && this.manifestOther) {
+			this.manifest.Files.forEach(file => {
+				const found = this.manifestOther.Files.filter(
+					fileOther => fileOther.Path === file.Path).length > 0;
+				if (!found) {
+					this.addedFiles.push(file);
+				}
+			});
+			this.manifestOther.Files.forEach(fileOther => {
+				const found = this.manifest.Files.filter(
+					file => fileOther.Path === file.Path).length > 0;
+				if (!found) {
+					this.deletedFiles.push(fileOther);
+				}
+			});
+			this.manifestOther.Files.forEach(fileOther => {
+				const file = this.manifest.Files.find(
+					file => fileOther.Path === file.Path &&
+					fileOther.Object.Hash !== file.Object.Hash);
+				if (file) {
+					this.modifiedFiles.push({new: file, old: fileOther});
+				}
+			});
+		}
+		this.loaded = true;
 	},
 	template: `
-		<div>
+		<div v-if="loaded">
 			<h1>Compare Package {{package}} Version {{version}} and {{versionOther}}</h1>
-			<table>
+			<div class="error" v-if="manifest === null">
+				The package {{package}} in version {{version}} was not found!
+			</div>
+			<div class="error" v-if="manifestOther === null">
+				The package {{package}} in version {{versionOther}} was not found!
+			</div>
+			<table v-if="manifest && manifestOther">
 				<tr>
 					<th>File</th>
 					<th>Status</th>

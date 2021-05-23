@@ -5,3 +5,4 @@ th {text-align: left; background-color: #fafafa}
 a {color: #007bff; text-decoration: none}
 a:hover {text-decoration: underline}
 .breadcrumbs {background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 10px}
+.error {background-color: #f3d5d5; padding: 10px; border-radius: 4px; margin-bottom: 10px}
