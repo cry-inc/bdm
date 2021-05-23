@@ -2,32 +2,27 @@ package server
 
 import (
 	"embed"
-	"mime"
+	"io/fs"
 	"net/http"
-	"path/filepath"
 )
 
 //go:embed static
 var staticFs embed.FS
 
+// Use this during development to allow UI development without rebuilding.
+// It will server the static UI file from disk instead from the embedded FS.
+const developmentMode = false
+
 func createStaticHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		if path == "/" {
-			path = "/index.html"
-		}
-		data, err := staticFs.ReadFile("static" + path)
+	var fileSystem http.FileSystem = nil
+	if developmentMode {
+		fileSystem = http.Dir("pkg/bdm/server/static")
+	} else {
+		embeddedFileSystem, err := fs.Sub(staticFs, "static")
 		if err != nil {
-			http.Error(w, "File not found", http.StatusNotFound)
-			return
+			panic(err)
 		}
-		ext := filepath.Ext(path)
-		if len(ext) > 0 {
-			mimeType := mime.TypeByExtension(ext)
-			if len(mimeType) > 0 {
-				w.Header().Set("Content-Type", mimeType)
-			}
-		}
-		w.Write(data)
+		fileSystem = http.FS(embeddedFileSystem)
 	}
+	return http.FileServer(fileSystem).ServeHTTP
 }
