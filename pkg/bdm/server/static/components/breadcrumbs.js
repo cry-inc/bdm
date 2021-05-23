@@ -7,32 +7,28 @@ export default {
 	watch: {
 		'$route'(route) {
 			this.breadcrumbs = [];
-			if (route.name == 'packages' || route.name == 'versions' || route.name == 'package' || route.name == 'diff') {
+			if (route.name == 'packages' || route.name == 'versions' || route.name == 'package' || route.name == 'compare') {
 				this.breadcrumbs.push({
 					Name: 'Packages',
 					Route: '/'
 				});
 			}
-			if (route.name == 'versions' || route.name == 'package' || route.name == 'diff') {
+			if (route.name == 'versions' || route.name == 'package' || route.name == 'compare') {
 				this.breadcrumbs.push({
 					Name: route.params.package,
 					Route: '/' + route.params.package
 				});
 			}
-			if (route.name == 'package') {
+			if (route.name == 'package' || route.name == 'compare') {
 				this.breadcrumbs.push({
 					Name: 'Version ' + route.params.version,
 					Route: '/' + route.params.package + '/' + route.params.version
 				});
 			}
-			if (route.name == 'diff') {
+			if (route.name == 'compare') {
 				this.breadcrumbs.push({
-					Name: 'Version ' + route.params.versionA,
-					Route: '/' + route.params.package + '/' + route.params.versionA
-				});
-				this.breadcrumbs.push({
-					Name: 'Compare with Version ' + route.params.versionB,
-					Route: '/' + route.params.package + '/' + route.params.versionA + '/diff/' + route.params.versionB
+					Name: 'Compare with Version ' + route.params.versionOther,
+					Route: '/' + route.params.package + '/' + route.params.version + '/compare/' + route.params.versionOther
 				});
 			}
 		}

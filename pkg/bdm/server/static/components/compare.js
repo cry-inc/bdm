@@ -1,5 +1,5 @@
 export default {
-	props: ['package', 'versionA', 'versionB'],
+	props: ['package', 'version', 'versionOther'],
 	data() {
 		return {
 			addedFiles: [],
@@ -8,37 +8,37 @@ export default {
 		};
 	},
 	async created() {
-		const responseA = await fetch('manifests/' + this.package + '/' + this.versionA);
-		const responseB = await fetch('manifests/' + this.package + '/' + this.versionB);
-		this.manifestA = await responseA.json();
-		this.manifestB = await responseB.json();
+		const response = await fetch('manifests/' + this.package + '/' + this.version);
+		const responseOther = await fetch('manifests/' + this.package + '/' + this.versionOther);
+		this.manifest = await response.json();
+		this.manifestOther = await responseOther.json();
 
-		this.manifestA.Files.forEach(fileA => {
-			const found = this.manifestB.Files.filter(
-				fileB => fileB.Path === fileA.Path).length > 0;
+		this.manifest.Files.forEach(file => {
+			const found = this.manifestOther.Files.filter(
+				fileOther => fileOther.Path === file.Path).length > 0;
 			if (!found) {
-				this.addedFiles.push(fileA);
+				this.addedFiles.push(file);
 			}
 		});
-		this.manifestB.Files.forEach(fileB => {
-			const found = this.manifestA.Files.filter(
-				fileA => fileB.Path === fileA.Path).length > 0;
+		this.manifestOther.Files.forEach(fileOther => {
+			const found = this.manifest.Files.filter(
+				file => fileOther.Path === file.Path).length > 0;
 			if (!found) {
-				this.deletedFiles.push(fileB);
+				this.deletedFiles.push(fileOther);
 			}
 		});
-		this.manifestB.Files.forEach(fileB => {
-			const fileA = this.manifestA.Files.find(
-				fileA => fileB.Path === fileA.Path &&
-				fileB.Object.Hash !== fileA.Object.Hash);
-			if (fileA) {
-				this.modifiedFiles.push({new: fileA, old: fileB});
+		this.manifestOther.Files.forEach(fileOther => {
+			const file = this.manifest.Files.find(
+				file => fileOther.Path === file.Path &&
+				fileOther.Object.Hash !== file.Object.Hash);
+			if (file) {
+				this.modifiedFiles.push({new: file, old: fileOther});
 			}
 		});
 	},
 	template: `
 		<div>
-			<h1>Compare Package {{package}} Version {{versionA}} and {{versionB}}</h1>
+			<h1>Compare Package {{package}} Version {{version}} and {{versionOther}}</h1>
 			<table>
 				<tr>
 					<th>File</th>
