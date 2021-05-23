@@ -20,7 +20,7 @@ type loginResponse struct {
 func createLoginGetHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
 			return
 		}
 
@@ -54,7 +54,7 @@ func createLoginGetHandler(users Users) http.HandlerFunc {
 func createLoginPostHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
 			return
 		}
 
@@ -105,7 +105,7 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 func createLoginDeleteHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusForbidden)
+			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
 			return
 		}
 
