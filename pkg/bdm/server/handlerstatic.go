@@ -9,8 +9,8 @@ import (
 //go:embed static
 var staticFs embed.FS
 
-// Use this during development to allow UI development without rebuilding.
-// It will server the static UI file from disk instead from the embedded FS.
+// Use this during development to test web UI changes without rebuilding.
+// It will serve the static UI assets from disk instead from the embedded FS.
 const developmentMode = false
 
 func createStaticHandler() http.HandlerFunc {
