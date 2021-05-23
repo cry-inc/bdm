@@ -34,7 +34,7 @@ export default {
 		}
 	},
 	template: `
-		<div>
+		<div class="breadcrumbs">
 			BDM
 			<span v-for="(breadcrumb, index) in breadcrumbs">
 				<span v-if="index !== 0"> / </span>

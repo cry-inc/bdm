@@ -4,3 +4,4 @@ th, td {padding: 5px; border: 1px solid #eee}
 th {text-align: left; background-color: #fafafa}
 a {color: #007bff; text-decoration: none}
 a:hover {text-decoration: underline}
+.breadcrumbs {background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 10px}
