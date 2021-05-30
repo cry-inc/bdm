@@ -35,7 +35,6 @@ export default {
 	},
 	template: `
 		<div class="breadcrumbs">
-			BDM
 			<span v-for="(breadcrumb, index) in breadcrumbs">
 				<span v-if="index !== 0"> / </span>
 				<router-link  v-bind:to="breadcrumb.Route">{{breadcrumb.Name}}</router-link>
