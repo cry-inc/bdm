@@ -3,6 +3,7 @@ import Versions from './components/versions.js'
 import Package from './components/package.js'
 import Compare from './components/compare.js'
 import Breadcrumbs from './components/breadcrumbs.js'
+import UserMenu from './components/user-menu.js'
 import Helper from './helper.js'
 
 const router = VueRouter.createRouter({
@@ -17,7 +18,10 @@ const router = VueRouter.createRouter({
 
 const app = Vue.createApp({});
 app.use(router);
+
 app.component('breadcrumbs', Breadcrumbs);
+app.component('user-menu', UserMenu);
+
 app.config.globalProperties.$filters = {
 	size(bytes) {
 		return Helper.getSizeString(bytes);
@@ -26,4 +30,5 @@ app.config.globalProperties.$filters = {
 		return new Date(unixTime * 1000).toLocaleString();
 	}
 };
+
 app.mount('#bdm');
