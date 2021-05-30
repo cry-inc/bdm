@@ -7,8 +7,7 @@ export default {
 	},
 	async created() {
 		const response = await fetch('manifests');
-		const packages = await response.json();
-		this.packages = packages;
+		this.packages = response.ok ? await response.json() : [];
 		this.loaded = true;
 	},
 	template: `
