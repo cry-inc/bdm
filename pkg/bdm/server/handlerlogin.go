@@ -13,10 +13,6 @@ type loginRequest struct {
 	Password string
 }
 
-type loginResponse struct {
-	UserId string
-}
-
 func createLoginGetHandler(users Users) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
@@ -27,22 +23,27 @@ func createLoginGetHandler(users Users) http.HandlerFunc {
 		cookie, err := req.Cookie("login")
 		if err != nil {
 			writer.Header().Set("Content-Type", "application/json")
-			fmt.Fprintf(writer, `{"UserId": null}`)
+			fmt.Fprintf(writer, "null")
 			return
 		}
 
 		token, err := readAuthToken(cookie.Value)
 		if err != nil {
 			writer.Header().Set("Content-Type", "application/json")
-			fmt.Fprintf(writer, `{"UserId": null}`)
+			fmt.Fprintf(writer, "null")
 			return
 		}
 
-		response := loginResponse{token.UserId}
-		jsonData, err := json.Marshal(response)
+		user, err := users.GetUser(token.UserId)
+		if err != nil {
+			http.Error(writer, "Failed to find user", http.StatusNotFound)
+			return
+		}
+
+		jsonData, err := json.Marshal(user)
 		if err != nil {
 			log.Print(fmt.Errorf("error marshalling login JSON response: %w", err))
-			http.Error(writer, "Failed to generate JSON login data", http.StatusInternalServerError)
+			http.Error(writer, "Failed to generate JSON", http.StatusInternalServerError)
 			return
 		}
 
@@ -61,7 +62,7 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading login request: %w", err))
-			http.Error(writer, "Failed read login request", http.StatusInternalServerError)
+			http.Error(writer, "Failed to read login request", http.StatusInternalServerError)
 			return
 		}
 
@@ -69,7 +70,7 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 		err = json.Unmarshal(jsonData, &login)
 		if err != nil {
 			log.Print(fmt.Errorf("error unmarshalling JSON login data: %w", err))
-			http.Error(writer, "Failed to parse JSON login data", http.StatusInternalServerError)
+			http.Error(writer, "Failed to parse JSON", http.StatusInternalServerError)
 			return
 		}
 
@@ -89,11 +90,16 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 		}
 		http.SetCookie(writer, &cookie)
 
-		response := loginResponse{login.UserId}
-		jsonData, err = json.Marshal(response)
+		user, err := users.GetUser(login.UserId)
+		if err != nil {
+			http.Error(writer, "Failed to find user", http.StatusNotFound)
+			return
+		}
+
+		jsonData, err = json.Marshal(user)
 		if err != nil {
 			log.Print(fmt.Errorf("error marshalling login JSON response: %w", err))
-			http.Error(writer, "Failed to generate JSON login data", http.StatusInternalServerError)
+			http.Error(writer, "Failed to generate JSON", http.StatusInternalServerError)
 			return
 		}
 
@@ -117,6 +123,6 @@ func createLoginDeleteHandler(users Users) http.HandlerFunc {
 		}
 		http.SetCookie(writer, &cookie)
 		writer.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(writer, `{"UserId": null}`)
+		fmt.Fprintf(writer, "null")
 	}
 }
