@@ -8,10 +8,10 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-func hasUser(users []string, user string) bool {
+func hasUser(users []*User, userId string) bool {
 	found := false
 	for _, u := range users {
-		if u == user {
+		if u.Id == userId {
 			found = true
 			break
 		}
@@ -41,7 +41,7 @@ func TestUsersGetHandler(t *testing.T) {
 	router.ServeHTTP(response, request)
 	util.Assert(t, response.status == 0)
 
-	var userList []string
+	var userList []*User
 	err := json.Unmarshal(response.data, &userList)
 	util.AssertNoError(t, err)
 	util.Assert(t, len(userList) == 3)

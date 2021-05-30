@@ -10,11 +10,19 @@ import (
 
 func createUsersGetHandler(users Users) http.HandlerFunc {
 	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		userList, err := users.GetUsers()
+		userIds, err := users.GetUsers()
 		if err != nil {
 			log.Print(fmt.Errorf("error getting users list: %w", err))
 			http.Error(writer, "Failed to get user list", http.StatusInternalServerError)
 			return
+		}
+
+		userList := make([]*User, 0)
+		for _, id := range userIds {
+			user, err := users.GetUser(id)
+			if err == nil {
+				userList = append(userList, user)
+			}
 		}
 
 		jsonData, err := json.Marshal(userList)
@@ -102,16 +110,12 @@ func createUserDeleteHandler(users Users) http.HandlerFunc {
 		}
 
 		writer.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(writer, "{}")
+		fmt.Fprintf(writer, "null")
 	})
 }
 
 type changePasswordRequest struct {
 	Password string
-}
-
-type changeRolesRequest struct {
-	Roles
 }
 
 func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
@@ -139,6 +143,10 @@ func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write([]byte("{}"))
 	})
+}
+
+type changeRolesRequest struct {
+	Roles
 }
 
 func createUserPatchRolesHandler(users Users) http.HandlerFunc {
