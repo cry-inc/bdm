@@ -9,14 +9,11 @@ export default {
 		};
 	},
 	async created() {
-		return this.query();
+		const response = await fetch('login');
+		this.usersEnabled = response.status !== 503;
+		this.user = response.ok ? await response.json() : null;
 	},
 	methods: {
-		async query() {
-			const response = await fetch('login');
-			this.usersEnabled = response.status !== 503;
-			this.user = response.ok ? await response.json() : null;
-		},
 		async toggleLogin() {
 			this.showLoginForm = !this.showLoginForm;
 		},
@@ -37,12 +34,11 @@ export default {
 				this.userId = '';
 				this.password = '';
 				this.showLoginForm = false;
-				await this.query();
+				this.$router.go();
 			}
 		},
 		async logout() {
 			await fetch('/login', {method: 'DELETE'});
-			await this.query();
 			this.$router.go();
 		}
 	},
