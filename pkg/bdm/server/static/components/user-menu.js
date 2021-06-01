@@ -50,9 +50,7 @@ export default {
 			<span class="guest" v-if="!usersEnabled || !user">
 				Guest
 			</span>
-			<span v-if="user">
-				{{user.Id}}
-			</span>
+			<router-link v-if="user" v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
 			<span v-if="user && user.Admin">
 				| <router-link to="/users">Manage Users</router-link>
 			</span>

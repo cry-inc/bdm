@@ -18,7 +18,7 @@ export default {
 			</div>
 			<ul>
 				<li v-for="user in users">
-					{{user.Id}}
+					<router-link v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
 				</li>
 			</ul>
 		</div>`
