@@ -23,7 +23,7 @@ export default {
 		<div v-if="loaded">
 			<h1>{{package}} Version {{version}}</h1>
 			<div class="error" v-if="!manifest.Files">
-				The package {{package}} in version {{version}} was not found!
+				The {{package}} in version {{version}} does not exist!
 			</div>
 			<div>
 				<table>

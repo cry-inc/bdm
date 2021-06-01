@@ -37,12 +37,13 @@ export default {
 				this.userId = '';
 				this.password = '';
 				this.showLoginForm = false;
-				this.query();
+				await this.query();
 			}
 		},
 		async logout() {
 			await fetch('/login', {method: 'DELETE'});
-			this.query();
+			await this.query();
+			this.$router.go();
 		}
 	},
 	template: `
