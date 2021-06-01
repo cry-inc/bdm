@@ -31,6 +31,12 @@ export default {
 					Route: '/' + route.params.package + '/' + route.params.version + '/compare/' + route.params.versionOther
 				});
 			}
+			if (route.name == 'users') {
+				this.breadcrumbs.push({
+					Name: 'Users',
+					Route: '/users'
+				});
+			}
 		}
 	},
 	template: `

@@ -53,6 +53,9 @@ export default {
 			<span v-if="user">
 				{{user.Id}}
 			</span>
+			<span v-if="user && user.Admin">
+				| <router-link to="/users">Manage Users</router-link>
+			</span>
 			<button v-if="usersEnabled && !user" @click="toggleLogin">
 				Login
 			</button>
