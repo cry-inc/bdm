@@ -8,3 +8,6 @@ a:hover {text-decoration: underline}
 .error {background-color: #f3d5d5; padding: 10px; border-radius: 4px; margin-bottom: 10px}
 .breadcrumbs {display: inline-block}
 .usermenu {display: inline-block; position: absolute; right: 10px}
+.usermenu button {margin-left: 10px}
+.guest {color: #999}
+.loginform {position: absolute; right: -10px; top: 30px; background-color: #fafafa; border-radius: 4px; padding: 10px}
