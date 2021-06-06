@@ -3,7 +3,6 @@ package store
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -51,13 +50,13 @@ func (s *packageStore) GetObject(hash string) (*bdm.Object, error) {
 }
 
 func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
-	fileHandle, err := ioutil.TempFile(s.objectsFolder, "tmp_*")
+	tempFile, err := os.CreateTemp(s.objectsFolder, "tmp_*")
 	if err != nil {
 		return nil, fmt.Errorf("error opening temporary object file: %w", err)
 	}
-	defer fileHandle.Close()
+	defer tempFile.Close()
 
-	compressedHandle, err := util.CreateCompressingWriter(fileHandle)
+	compressedHandle, err := util.CreateCompressingWriter(tempFile)
 	if err != nil {
 		return nil, fmt.Errorf("error creating compressing writer: %w", err)
 	}
@@ -72,10 +71,10 @@ func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 	}
 
 	hash := util.GetHashString(hasher)
-	tempFile := fileHandle.Name()
+	tempFileName := tempFile.Name()
 
 	compressedHandle.Close()
-	fileHandle.Close()
+	tempFile.Close()
 
 	{
 		s.objectsMutex.Lock()
@@ -84,7 +83,7 @@ func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 		object, _ := s.GetObject(hash)
 		if object != nil {
 			// Object exists already in store, no file moving required!
-			os.Remove(tempFile)
+			os.Remove(tempFileName)
 		} else {
 			objectPath := getObjectPath(hash)
 			finalPath := path.Join(s.objectsFolder, objectPath)
@@ -97,7 +96,7 @@ func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 				}
 			}
 
-			err := os.Rename(tempFile, finalPath)
+			err := os.Rename(tempFileName, finalPath)
 			if err != nil {
 				return nil, fmt.Errorf("error finalizing object file name: %w", err)
 			}
@@ -154,7 +153,7 @@ func (s *packageStore) GetObjects() ([]*bdm.Object, error) {
 			s.objectsFolder)
 	}
 
-	folders, err := ioutil.ReadDir(s.objectsFolder)
+	folders, err := os.ReadDir(s.objectsFolder)
 	if err != nil {
 		return nil, fmt.Errorf("error reading object store directory: %w", err)
 	}
@@ -166,13 +165,13 @@ func (s *packageStore) GetObjects() ([]*bdm.Object, error) {
 			continue
 		}
 		folderPath := path.Join(s.objectsFolder, folder.Name())
-		files, err := ioutil.ReadDir(folderPath)
+		files, err := os.ReadDir(folderPath)
 		if err != nil {
 			return nil, fmt.Errorf("error reading object store subdirectory %s: %w",
 				folderPath, err)
 		}
 		for _, file := range files {
-			if file.Mode().IsRegular() {
+			if file.Type().IsRegular() {
 				name := folder.Name() + file.Name()
 				if !strings.HasSuffix(name, sizeSuffix) {
 					object, err := s.GetObject(name)

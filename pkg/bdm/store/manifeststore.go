@@ -3,7 +3,6 @@ package store
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -185,7 +184,7 @@ func (s *packageStore) GetNames() ([]string, error) {
 		return nil, fmt.Errorf("manifest store folder does not exist")
 	}
 
-	items, err := ioutil.ReadDir(s.manifestsFolder)
+	items, err := os.ReadDir(s.manifestsFolder)
 	if err != nil {
 		return nil, fmt.Errorf("error reading manifest store directory: %w", err)
 	}
@@ -211,7 +210,7 @@ func (s *packageStore) GetVersions(packageName string) ([]uint, error) {
 		return []uint{}, nil
 	}
 
-	files, err := ioutil.ReadDir(packageFolder)
+	files, err := os.ReadDir(packageFolder)
 	if err != nil {
 		return nil, fmt.Errorf("error reading manifest store directory: %w", err)
 	}
@@ -222,7 +221,7 @@ func (s *packageStore) GetVersions(packageName string) ([]uint, error) {
 			name := file.Name()
 			i, err := strconv.Atoi(name)
 			if err != nil {
-				return nil, fmt.Errorf("error collecting version numbers from folder names: %w", err)
+				return nil, fmt.Errorf("error parsing version number from folder name %s: %w", name, err)
 			}
 			u := uint(i)
 			versions = append(versions, u)
