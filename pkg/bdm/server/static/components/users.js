@@ -2,7 +2,9 @@ export default {
 	data() {
 		return {
 			users: [],
-			loaded: false
+			loaded: false,
+			newUserId: '',
+			newUserPassword: ''
 		};
 	},
 	async created() {
@@ -41,6 +43,28 @@ export default {
 				alert('Failed to change role!');
 			}
 			await this.query();
+		},
+		async createUser() {
+			if (this.newUserPassword.length < 8) {
+				alert('Password must have at least 8 characters!');
+				return;
+			}
+			const request = {
+				Id: this.newUserId,
+				Password: this.newUserPassword
+			};
+			const response = await fetch('/users', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify(request)
+			});
+			if (!response.ok) {
+				alert('Failed to create user!');
+			} else {
+				this.newUserId = '';
+				this.newUserPassword = '';
+			}
+			await this.query();
 		}
 	},
 	template: `
@@ -67,5 +91,9 @@ export default {
 					<td><button @click="deleteUser(user)">Delete</button></td>
 				</tr>
 			</table>
+			<h2>Create New User</h2>
+			User Id: <input v-model="newUserId" placeholder="User ID"/><br>
+			Password: <input v-model="newUserPassword" type="password"><br>
+			<button @click="createUser">Create User</button>
 		</div>`
 }
