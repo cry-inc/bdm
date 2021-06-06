@@ -4,6 +4,7 @@ import Package from './components/package.js'
 import Compare from './components/compare.js'
 import Users from './components/users.js'
 import User from './components/user.js'
+import Tokens from './components/tokens.js'
 import Breadcrumbs from './components/breadcrumbs.js'
 import UserMenu from './components/user-menu.js'
 import Helper from './helper.js'
@@ -23,6 +24,7 @@ const router = VueRouter.createRouter({
 const app = Vue.createApp({});
 app.use(router);
 
+app.component('tokens', Tokens);
 app.component('breadcrumbs', Breadcrumbs);
 app.component('user-menu', UserMenu);
 

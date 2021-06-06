@@ -22,6 +22,7 @@ export default {
 				Reader: {{user.Reader ? 'yes' : 'no'}}<br>
 				Writer: {{user.Writer ? 'yes' : 'no'}}<br>
 				Admin: {{user.Admin ? 'yes' : 'no'}}<br>
+				<tokens v-bind:userId="user.Id"></tokens>
 			</div>
 		</div>`
 }
