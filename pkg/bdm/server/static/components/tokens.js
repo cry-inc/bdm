@@ -3,7 +3,10 @@ export default {
 	data() {
 		return {
 			tokens: [],
-			loaded: false
+			loaded: false,
+			createTokenReader: true,
+			createTokenWriter: false,
+			createTokenAdmin: false
 		};
 	},
 	async created() {
@@ -23,6 +26,26 @@ export default {
 			const response = await fetch('/users/' + this.userId + '/tokens/' + token.Id, {method: 'DELETE'});
 			if (!response.ok) {
 				alert('Unable to delete token!');
+			}
+			await this.query();
+		},
+		async createToken() {
+			const request = {
+				Reader: this.createTokenReader,
+				Writer: this.createTokenWriter,
+				Admin: this.createTokenAdmin
+			};
+			const response = await fetch('/users/' + this.userId + '/tokens', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify(request)
+			});
+			if (!response.ok) {
+				alert('Failed to create token!');
+			} else {
+				this.createTokenReader = true;
+				this.createTokenWriter = false;
+				this.createTokenAdmin = false;
 			}
 			await this.query();
 		}
@@ -49,5 +72,10 @@ export default {
 					<td><button @click="deleteToken(token)">Delete</button></td>
 				</tr>
 			</table>
+			<h2>Create Token</h2>
+			Reader: <input type="checkbox" v-model="createTokenReader"/><br>
+			Writer: <input type="checkbox" v-model="createTokenWriter"/><br>
+			Admin: <input type="checkbox" v-model="createTokenAdmin"/><br>
+			<button @click="createToken">Create Token</button>
 		</div>`
 }
