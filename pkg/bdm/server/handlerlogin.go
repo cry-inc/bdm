@@ -53,7 +53,7 @@ func createLoginGetHandler(users Users) http.HandlerFunc {
 }
 
 func createLoginPostHandler(users Users) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
+	return enforceSmallBodySize(func(writer http.ResponseWriter, req *http.Request) {
 		if !users.Available() {
 			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
 			return
@@ -105,7 +105,7 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }
 
 func createLoginDeleteHandler(users Users) http.HandlerFunc {

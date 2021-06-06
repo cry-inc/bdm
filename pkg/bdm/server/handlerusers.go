@@ -43,7 +43,7 @@ type createUserRequest struct {
 }
 
 func createUsersPostHandler(users Users) http.HandlerFunc {
-	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+	return enforceSmallBodySize(enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create user request: %w", err))
@@ -83,7 +83,7 @@ func createUsersPostHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	})
+	}))
 }
 
 func createUserGetHandler(users Users) http.HandlerFunc {
@@ -119,7 +119,7 @@ type changePasswordRequest struct {
 }
 
 func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
-	return enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+	return enforceSmallBodySize(enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
@@ -142,7 +142,7 @@ func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write([]byte("{}"))
-	})
+	}))
 }
 
 type changeRolesRequest struct {
@@ -150,7 +150,7 @@ type changeRolesRequest struct {
 }
 
 func createUserPatchRolesHandler(users Users) http.HandlerFunc {
-	return enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+	return enforceSmallBodySize(enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
@@ -188,5 +188,5 @@ func createUserPatchRolesHandler(users Users) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	})
+	}))
 }

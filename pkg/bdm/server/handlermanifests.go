@@ -129,7 +129,7 @@ func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http
 }
 
 func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
-	return func(writer http.ResponseWriter, req *http.Request) {
+	return enforceMediumBodySize(func(writer http.ResponseWriter, req *http.Request) {
 		if !hasWriteToken(req, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
@@ -185,5 +185,5 @@ func createPublishManifestHandler(packageStore store.Store, limits *bdm.Manifest
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	}
+	})
 }

@@ -32,7 +32,7 @@ func createTokensGetHandler(users Users, tokens Tokens) http.HandlerFunc {
 }
 
 func createTokensPostHandler(users Users, tokens Tokens) http.HandlerFunc {
-	return enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+	return enforceSmallBodySize(enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		jsonData, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create token request: %w", err))
@@ -79,7 +79,7 @@ func createTokensPostHandler(users Users, tokens Tokens) http.HandlerFunc {
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonData)
-	})
+	}))
 }
 
 func createTokensDeleteHandler(users Users, tokens Tokens) http.HandlerFunc {

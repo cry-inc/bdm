@@ -9,6 +9,24 @@ import (
 
 const apiTokenField = "bdm-api-token"
 
+// Ensures that cliensts do not send huge bodies to create server issues
+func enforceMaxBodySize(handler http.HandlerFunc, maxSize int64) http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
+		req.Body = http.MaxBytesReader(writer, req.Body, maxSize)
+		handler(writer, req)
+	}
+}
+
+func enforceSmallBodySize(handler http.HandlerFunc) http.HandlerFunc {
+	const maxSmallBodySize = 1024 * 100 // 100 kB is enough for small JSON payloads
+	return enforceMaxBodySize(handler, maxSmallBodySize)
+}
+
+func enforceMediumBodySize(handler http.HandlerFunc) http.HandlerFunc {
+	const maxMediumBodySize = 1024 * 1024 * 10 // 10 MB is the limit for bigger JSON payloads
+	return enforceMaxBodySize(handler, maxMediumBodySize)
+}
+
 func hasReadToken(request *http.Request, tokens Tokens) bool {
 	apiToken := request.Header.Get(apiTokenField)
 	return tokens.CanRead(apiToken)
