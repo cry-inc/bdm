@@ -58,7 +58,7 @@ After coming up with the idea of an immutable data store behind an HTTP interfac
 
 The specific requirements that I was trying to satisfy were:
 * Lightweight and portable server and client application
-* File deduplication and compression to minize storage and bandwith costs
+* File deduplication and compression to minimize storage and bandwidth costs
 * Intelligent package restore (omits downloading and restoring existing files)
 * Local caching for slow or expensive internet connections
 * Easy way of backupping the server data
