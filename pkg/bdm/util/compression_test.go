@@ -2,7 +2,6 @@ package util
 
 import (
 	"io"
-	"io/ioutil"
 	"testing"
 )
 
@@ -30,7 +29,7 @@ func TestCompression(t *testing.T) {
 		}
 	}()
 
-	readData, err := ioutil.ReadAll(cr)
+	readData, err := io.ReadAll(cr)
 	AssertNoError(t, err)
 	Assert(t, len(readData) == len(testData))
 

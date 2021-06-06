@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -48,7 +47,7 @@ func CreateJsonUsers(usersFile string) (Users, error) {
 }
 
 func (users *jsonUsers) loadUsers() error {
-	jsonData, err := ioutil.ReadFile(users.usersFile)
+	jsonData, err := os.ReadFile(users.usersFile)
 	if err != nil {
 		return fmt.Errorf("error reading user database file %s: %w", users.usersFile, err)
 	}
@@ -87,7 +86,7 @@ func (users *jsonUsers) saveUsers() error {
 		}
 	}
 
-	err = ioutil.WriteFile(users.usersFile, jsonData, os.ModePerm)
+	err = os.WriteFile(users.usersFile, jsonData, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("unable to write user database to file %s: %w",
 			users.usersFile, err)

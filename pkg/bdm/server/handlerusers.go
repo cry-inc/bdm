@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
@@ -44,7 +44,7 @@ type createUserRequest struct {
 
 func createUsersPostHandler(users Users) http.HandlerFunc {
 	return enforceSmallBodySize(enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create user request: %w", err))
 			http.Error(writer, "Failed read create user request", http.StatusBadRequest)
@@ -120,7 +120,7 @@ type changePasswordRequest struct {
 
 func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 	return enforceSmallBodySize(enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
 			http.Error(writer, "Failed read user change request", http.StatusBadRequest)
@@ -151,7 +151,7 @@ type changeRolesRequest struct {
 
 func createUserPatchRolesHandler(users Users) http.HandlerFunc {
 	return enforceSmallBodySize(enforceAdminUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading user patch request: %w", err))
 			http.Error(writer, "Failed read user change request", http.StatusBadRequest)

@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -33,7 +33,7 @@ func createTokensGetHandler(users Users, tokens Tokens) http.HandlerFunc {
 
 func createTokensPostHandler(users Users, tokens Tokens) http.HandlerFunc {
 	return enforceSmallBodySize(enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create token request: %w", err))
 			http.Error(writer, "Failed read create token request", http.StatusBadRequest)

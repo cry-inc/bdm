@@ -1,7 +1,7 @@
 package server
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,7 +43,7 @@ func createMockedRequest(method, path string, body *string, authUser *string) *h
 		Header: make(http.Header),
 	}
 	if body != nil {
-		request.Body = ioutil.NopCloser(strings.NewReader(*body))
+		request.Body = io.NopCloser(strings.NewReader(*body))
 	}
 	if authUser != nil {
 		authToken := createAuthToken(*authUser, defaultExpiration)

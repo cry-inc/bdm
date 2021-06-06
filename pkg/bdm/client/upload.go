@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -103,7 +102,7 @@ func findFilesToUpload(manifest *bdm.Manifest, serverURL, apiToken string) ([]bd
 	}
 	defer res.Body.Close()
 
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading POST response body: %w", err)
 	}
@@ -187,7 +186,7 @@ func uploadFiles(files []bdm.File, inputFolder, serverURL, apiToken string) erro
 	}
 	defer res.Body.Close()
 
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("error reading POST response from URL %s: %w", url, err)
 	}
@@ -243,7 +242,7 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiToken string) (*bdm.M
 	}
 	defer res.Body.Close()
 
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading POST response body: %w", err)
 	}
@@ -287,7 +286,7 @@ func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL, apiToken strin
 	}
 
 	defer res.Body.Close()
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("error reading limits response body: %w", err)
 	}

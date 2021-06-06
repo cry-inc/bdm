@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -74,7 +73,7 @@ func DownloadManifest(serverURL, apiToken, name string, version uint) (*bdm.Mani
 	}
 	defer res.Body.Close()
 
-	resData, err := ioutil.ReadAll(res.Body)
+	resData, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading manifest body: %w", err)
 	}

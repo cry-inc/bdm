@@ -6,7 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -56,7 +56,7 @@ func TestServerClient(t *testing.T) {
 
 	// Create dirty file and download again with clean mode enabled
 	const dirtyFile = outputFolder + "/dirty.dat"
-	ioutil.WriteFile(dirtyFile, []byte{0, 1, 2}, os.ModePerm)
+	os.WriteFile(dirtyFile, []byte{0, 1, 2}, os.ModePerm)
 	err = client.DownloadPackage(outputFolder, serverURL, readToken, packageNameSmall, 1, true)
 	util.AssertNoError(t, err)
 	util.Assert(t, !util.FileExists(dirtyFile))
@@ -173,7 +173,7 @@ func TestServerGzipFileHandler(t *testing.T) {
 	reader, err := gzip.NewReader(buf)
 	util.AssertNoError(t, err)
 	defer reader.Close()
-	decompressed, err := ioutil.ReadAll(reader)
+	decompressed, err := io.ReadAll(reader)
 	util.AssertNoError(t, err)
 
 	// Check decompressed data for original length
@@ -212,13 +212,13 @@ func TestServerZipHandler(t *testing.T) {
 		file, err := zipFile.Open()
 		util.AssertNoError(t, err)
 		defer file.Close()
-		unzippedFileData, err := ioutil.ReadAll(file)
+		unzippedFileData, err := io.ReadAll(file)
 		util.AssertNoError(t, err)
 		path := filepath.Join(unzipFolder, zipFile.Name)
 		folder := filepath.Dir(path)
 		err = os.MkdirAll(folder, os.ModePerm)
 		util.AssertNoError(t, err)
-		err = ioutil.WriteFile(path, unzippedFileData, os.ModePerm)
+		err = os.WriteFile(path, unzippedFileData, os.ModePerm)
 		util.AssertNoError(t, err)
 	}
 
@@ -344,7 +344,7 @@ func httpGet(path string) ([]byte, http.Header, error) {
 	if resp.StatusCode != 200 {
 		return nil, nil, fmt.Errorf("returned status code %d", resp.StatusCode)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, nil, err
 	}

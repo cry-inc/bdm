@@ -1,7 +1,6 @@
 package bdm
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -112,7 +111,7 @@ func TestGenerateManifest(t *testing.T) {
 	err := os.MkdirAll(testFolder+"/dir/subdir", os.ModePerm)
 	util.AssertNoError(t, err)
 
-	err = ioutil.WriteFile(testFolder+"/dir/subdir/my file äöü 人物.txt", []byte{1, 2, 3}, os.ModePerm)
+	err = os.WriteFile(testFolder+"/dir/subdir/my file äöü 人物.txt", []byte{1, 2, 3}, os.ModePerm)
 	util.AssertNoError(t, err)
 
 	manifest, err := GenerateManifest("foo", testFolder)

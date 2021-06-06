@@ -2,7 +2,6 @@ package util
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -27,7 +26,7 @@ func TestHashFile(t *testing.T) {
 
 	testFile := "test.dat"
 	testData := []byte{0, 1, 2, 3, 4, 5, 6}
-	err = ioutil.WriteFile(testFile, testData, os.ModePerm)
+	err = os.WriteFile(testFile, testData, os.ModePerm)
 	AssertNoError(t, err)
 	hash, err = HashFile(testFile)
 	AssertNoError(t, err)

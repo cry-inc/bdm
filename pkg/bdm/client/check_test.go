@@ -1,7 +1,6 @@
 package client
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -21,7 +20,7 @@ func TestCheckFiles(t *testing.T) {
 	util.AssertNoError(t, err)
 
 	junkFile := path.Join(testFolder, "bla")
-	err = ioutil.WriteFile(junkFile, []byte{123}, os.ModePerm)
+	err = os.WriteFile(junkFile, []byte{123}, os.ModePerm)
 	util.AssertNoError(t, err)
 	defer os.Remove(junkFile)
 

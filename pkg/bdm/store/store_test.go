@@ -3,7 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -55,7 +55,7 @@ func TestStore(t *testing.T) {
 	// Read object #1 from store and compare returned data
 	reader, err := store.ReadObject(objectHash1)
 	util.AssertNoError(t, err)
-	readData, err := ioutil.ReadAll(reader)
+	readData, err := io.ReadAll(reader)
 	util.AssertNoError(t, err)
 	util.Assert(t, reflect.DeepEqual(readData, objectData1))
 

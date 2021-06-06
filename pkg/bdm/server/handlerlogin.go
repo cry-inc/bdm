@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
@@ -59,7 +59,7 @@ func createLoginPostHandler(users Users) http.HandlerFunc {
 			return
 		}
 
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading login request: %w", err))
 			http.Error(writer, "Failed to read login request", http.StatusInternalServerError)

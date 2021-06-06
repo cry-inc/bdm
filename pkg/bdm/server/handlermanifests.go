@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -135,7 +135,7 @@ func createPublishManifestHandler(packageStore store.Store, limits *bdm.Manifest
 			return
 		}
 
-		jsonData, err := ioutil.ReadAll(req.Body)
+		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(writer, "Bad request", http.StatusBadRequest)
 			return

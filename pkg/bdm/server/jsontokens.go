@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sync"
@@ -50,7 +49,7 @@ func CreateJsonTokens(tokensFile string, users Users) (Tokens, error) {
 }
 
 func (tokens *jsonTokens) loadTokens() error {
-	jsonData, err := ioutil.ReadFile(tokens.tokensFile)
+	jsonData, err := os.ReadFile(tokens.tokensFile)
 	if err != nil {
 		return fmt.Errorf("error reading token database file %s: %w", tokens.tokensFile, err)
 	}
@@ -88,7 +87,7 @@ func (tokens *jsonTokens) saveTokens() error {
 		}
 	}
 
-	err = ioutil.WriteFile(tokens.tokensFile, jsonData, os.ModePerm)
+	err = os.WriteFile(tokens.tokensFile, jsonData, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("unable to write token database to file %s: %w",
 			tokens.tokensFile, err)

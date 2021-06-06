@@ -33,7 +33,7 @@ func (s *packageStore) GetObject(hash string) (*bdm.Object, error) {
 	}
 
 	sizePath := filePath + sizeSuffix
-	sizeBytes, err := ioutil.ReadFile(sizePath)
+	sizeBytes, err := os.ReadFile(sizePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read object size file %s: %w",
 			sizePath, err)
@@ -104,7 +104,7 @@ func (s *packageStore) AddObject(reader io.Reader) (*bdm.Object, error) {
 
 			sizeBytes := util.Int64ToBytes(fileSize)
 			sizePath := finalPath + sizeSuffix
-			err = ioutil.WriteFile(sizePath, sizeBytes, os.ModePerm)
+			err = os.WriteFile(sizePath, sizeBytes, os.ModePerm)
 			if err != nil {
 				return nil, fmt.Errorf("error writing object size file %s: %w",
 					sizePath, err)

@@ -165,7 +165,7 @@ func (s *packageStore) GetManifest(packageName string, version uint) (*bdm.Manif
 	}
 
 	manifestPath := path.Join(versionFolder, manifestFileName)
-	jsonData, err := ioutil.ReadFile(manifestPath)
+	jsonData, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading manifest file for package %s in version %d: %w",
 			packageName, version, err)
