@@ -67,6 +67,20 @@ export default {
 			await this.query();
 		}
 	},
+	computed: {
+		sortedUsers() {
+			// Return sorted copy of original array
+			return this.users.concat().sort(function(a, b) {
+				if (a.Id > b.Id) {
+					return 1;
+				} else if (a.Id < b.Id) {
+					return -1;
+				} else {
+					return 0;
+				}
+			});
+		}
+	},
 	template: `
 		<div v-if="loaded">
 			<h1>Users</h1>
@@ -81,7 +95,7 @@ export default {
 					<th>Admin</th>
 					<th>&nbsp;</th>
 				</tr>
-				<tr v-for="user in users">
+				<tr v-for="user in sortedUsers">
 					<td>
 						<router-link v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
 					</td>
