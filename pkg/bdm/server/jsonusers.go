@@ -13,6 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const minPasswordLength = 8
+
 type jsonUser struct {
 	User
 	Salt string
@@ -139,8 +141,8 @@ func (users *jsonUsers) CreateUser(user User, password string) error {
 		return fmt.Errorf("user ID exists already in database")
 	}
 
-	if len(password) < 8 {
-		return fmt.Errorf("password must be at least 8 characters long")
+	if len(password) < minPasswordLength {
+		return fmt.Errorf("password must be at least %d characters long", minPasswordLength)
 	}
 
 	salt := util.GenerateRandomHexString(16)
@@ -233,6 +235,10 @@ func (users *jsonUsers) Authenticate(userId, password string) bool {
 }
 
 func (users *jsonUsers) ChangePassword(userId, password string) error {
+	if len(password) < minPasswordLength {
+		return fmt.Errorf("password must be at least %d characters long", minPasswordLength)
+	}
+
 	users.mutex.Lock()
 	defer users.mutex.Unlock()
 
