@@ -17,14 +17,14 @@ const router = VueRouter.createRouter({
 		{path: '/:package/:version', name: 'package', component: Package, props: true},
 		{path: '/:package/:version/compare/:versionOther', name: 'compare', component: Compare, props: true},
 		{path: '/users', name: 'users', component: Users},
-		{path: '/users/:userId', name: 'user', component: User, props: true}
+		{path: '/users/:userId', name: 'user', component: User, props: true},
+		{path: '/users/:userId/tokens', name: 'tokens', component: Tokens, props: true}
 	]
 });
 
 const app = Vue.createApp({});
 app.use(router);
 
-app.component('tokens', Tokens);
 app.component('breadcrumbs', Breadcrumbs);
 app.component('user-menu', UserMenu);
 

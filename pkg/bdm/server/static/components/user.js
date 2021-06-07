@@ -53,12 +53,12 @@ export default {
 				Reader: {{user.Reader ? 'yes' : 'no'}}<br>
 				Writer: {{user.Writer ? 'yes' : 'no'}}<br>
 				Admin: {{user.Admin ? 'yes' : 'no'}}<br>
+				<p><router-link v-bind:to="'/users/' + user.Id + '/tokens'">Manage Tokens</router-link></p>
 				<h2>Change Password</h2>
 				Old Password: <input v-model="oldPassword" type="password" placeholder="Old Password"/> (not required for Admins when changing passwords for others)<br>
 				New Password: <input v-model="newPassword1" type="password" placeholder="New Password"/> (at least 8 characters)<br>
 				Repeat New Password: <input v-model="newPassword2" type="password" placeholder="New Password"/><br>
 				<button @click="changePassword">Change Password</button>
-				<tokens v-bind:userId="user.Id"></tokens>
 			</div>
 		</div>`
 }

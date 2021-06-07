@@ -31,16 +31,22 @@ export default {
 					Route: '/' + route.params.package + '/' + route.params.version + '/compare/' + route.params.versionOther
 				});
 			}
-			if (route.name === 'users' || route.name === 'user') {
+			if (route.name === 'users' || route.name === 'user' || route.name === 'tokens') {
 				this.breadcrumbs.push({
 					Name: 'Users',
 					Route: '/users'
 				});
 			}
-			if (route.name === 'user') {
+			if (route.name === 'user' || route.name === 'tokens') {
 				this.breadcrumbs.push({
 					Name: route.params.userId,
 					Route: '/users/' + route.params.userId
+				});
+			}
+			if (route.name === 'tokens') {
+				this.breadcrumbs.push({
+					Name: 'Tokens',
+					Route: '/users/' + route.params.userId + '/tokens'
 				});
 			}
 		}
