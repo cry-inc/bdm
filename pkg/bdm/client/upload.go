@@ -100,9 +100,10 @@ func findFilesToUpload(manifest *bdm.Manifest, serverURL, apiToken string) ([]bd
 	if err != nil {
 		return nil, fmt.Errorf("error sending POST request to URL %s: %w", url, err)
 	}
-	defer res.Body.Close()
 
-	resData, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	limitedReader := io.LimitReader(res.Body, maxBodySize)
+	resData, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading POST response body: %w", err)
 	}
@@ -184,9 +185,10 @@ func uploadFiles(files []bdm.File, inputFolder, serverURL, apiToken string) erro
 	if err != nil {
 		return fmt.Errorf("error sending POST request to URL %s: %w", url, err)
 	}
-	defer res.Body.Close()
 
-	resData, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	limitedReader := io.LimitReader(res.Body, maxBodySize)
+	resData, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return fmt.Errorf("error reading POST response from URL %s: %w", url, err)
 	}
@@ -240,9 +242,10 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiToken string) (*bdm.M
 	if err != nil {
 		return nil, fmt.Errorf("error sending POST request to URL %s: %w", url, err)
 	}
-	defer res.Body.Close()
 
-	resData, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	limitedReader := io.LimitReader(res.Body, maxBodySize)
+	resData, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading POST response body: %w", err)
 	}
@@ -286,7 +289,8 @@ func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL, apiToken strin
 	}
 
 	defer res.Body.Close()
-	resData, err := io.ReadAll(res.Body)
+	limitedReader := io.LimitReader(res.Body, maxBodySize)
+	resData, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return fmt.Errorf("error reading limits response body: %w", err)
 	}

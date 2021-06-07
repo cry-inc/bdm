@@ -73,7 +73,8 @@ func DownloadManifest(serverURL, apiToken, name string, version uint) (*bdm.Mani
 	}
 	defer res.Body.Close()
 
-	resData, err := io.ReadAll(res.Body)
+	limitedReader := io.LimitReader(res.Body, maxBodySize)
+	resData, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading manifest body: %w", err)
 	}

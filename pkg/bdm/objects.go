@@ -9,7 +9,7 @@ import (
 )
 
 // 10 MB should be enough for the objects JSON data!
-const sizeLimit = 10 * 1024 * 1024
+const JsonSizeLimit = 10 * 1024 * 1024
 
 // ReadObjectsFromStream reads a list of Objects from a stream
 func ReadObjectsFromStream(reader io.Reader) ([]Object, error) {
@@ -23,7 +23,7 @@ func ReadObjectsFromStream(reader io.Reader) ([]Object, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error decoding objects length: %w", err)
 	}
-	if length <= 0 || length >= sizeLimit {
+	if length <= 0 || length >= JsonSizeLimit {
 		return nil, fmt.Errorf("found invalid JSON length %d", length)
 	}
 

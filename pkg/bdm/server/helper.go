@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cry-inc/bdm/pkg/bdm"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,9 +23,9 @@ func enforceSmallBodySize(handler http.HandlerFunc) http.HandlerFunc {
 	return enforceMaxBodySize(handler, maxSmallBodySize)
 }
 
-func enforceMediumBodySize(handler http.HandlerFunc) http.HandlerFunc {
-	const maxMediumBodySize = 1024 * 1024 * 10 // 10 MB is the limit for bigger JSON payloads
-	return enforceMaxBodySize(handler, maxMediumBodySize)
+func enforceJsonBodySize(handler http.HandlerFunc) http.HandlerFunc {
+	// Use size limit from base package that is used everywhere for JSON data
+	return enforceMaxBodySize(handler, bdm.JsonSizeLimit)
 }
 
 func hasReadToken(request *http.Request, tokens Tokens) bool {
