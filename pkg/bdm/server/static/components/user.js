@@ -2,6 +2,7 @@ export default {
 	props: ['userId'],
 	data() {
 		return {
+			login: null,
 			user: null,
 			loaded: false,
 			oldPassword: '',
@@ -10,8 +11,10 @@ export default {
 		};
 	},
 	async created() {
-		const response = await fetch('users/' + this.userId);
-		this.user = response.ok ? await response.json() : null;
+		const loginResponse = await fetch('login');
+		this.login = loginResponse.ok ? await loginResponse.json() : null;
+		const userResponse = await fetch('users/' + this.userId);
+		this.user = userResponse.ok ? await userResponse.json() : null;
 		this.loaded = true;
 	},
 	methods: {
@@ -55,7 +58,9 @@ export default {
 				Admin: {{user.Admin ? 'yes' : 'no'}}<br>
 				<p><router-link v-bind:to="'/users/' + user.Id + '/tokens'">Manage Tokens</router-link></p>
 				<h2>Change Password</h2>
-				Old Password: <input v-model="oldPassword" type="password" placeholder="Old Password"/> (not required for Admins when changing passwords for others)<br>
+				<span v-if="!login || !login.Admin || login.Id === user.Id">
+					Old Password: <input v-model="oldPassword" type="password" placeholder="Old Password"/><br>
+				</span>
 				New Password: <input v-model="newPassword1" type="password" placeholder="New Password"/> (at least 8 characters)<br>
 				Repeat New Password: <input v-model="newPassword2" type="password" placeholder="New Password"/><br>
 				<button @click="changePassword">Change Password</button>
