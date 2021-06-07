@@ -115,7 +115,8 @@ func createUserDeleteHandler(users Users) http.HandlerFunc {
 }
 
 type changePasswordRequest struct {
-	Password string
+	OldPassword string
+	NewPassword string
 }
 
 func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
@@ -134,7 +135,15 @@ func createUserPatchPasswordHandler(users Users) http.HandlerFunc {
 			return
 		}
 
-		err = users.ChangePassword(paramUser.Id, passChange.Password)
+		// Admins can change passwords for others, otherwise the old PW must be provided
+		if !authUser.Admin || authUser.Id == paramUser.Id {
+			if !users.Authenticate(paramUser.Id, passChange.OldPassword) {
+				http.Error(writer, "Old password does not match", http.StatusBadRequest)
+				return
+			}
+		}
+
+		err = users.ChangePassword(paramUser.Id, passChange.NewPassword)
 		if err != nil {
 			http.Error(writer, "Failed to apply new password", http.StatusBadRequest)
 			return

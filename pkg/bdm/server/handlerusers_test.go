@@ -98,7 +98,7 @@ func TestUserPatchHandlers(t *testing.T) {
 	router := CreateRouter(nil, nil, users, nil)
 
 	authUser := "admin"
-	body := `{"Password": "newadminpassword"}`
+	body := `{"NewPassword": "newadminpassword", "OldPassword": "adminpassword"}`
 	request := createMockedRequest("PATCH", "/users/admin/password", &body, &authUser)
 	response := createMockedResponse()
 	router.ServeHTTP(response, request)
