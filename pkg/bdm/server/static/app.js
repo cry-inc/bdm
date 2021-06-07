@@ -5,6 +5,7 @@ import Compare from './components/compare.js'
 import Users from './components/users.js'
 import User from './components/user.js'
 import Tokens from './components/tokens.js'
+import Login from './components/login.js'
 import Breadcrumbs from './components/breadcrumbs.js'
 import UserMenu from './components/user-menu.js'
 import Helper from './helper.js'
@@ -18,7 +19,8 @@ const router = VueRouter.createRouter({
 		{path: '/:package/:version/compare/:versionOther', name: 'compare', component: Compare, props: true},
 		{path: '/users', name: 'users', component: Users},
 		{path: '/users/:userId', name: 'user', component: User, props: true},
-		{path: '/users/:userId/tokens', name: 'tokens', component: Tokens, props: true}
+		{path: '/users/:userId/tokens', name: 'tokens', component: Tokens, props: true},
+		{path: '/login', name: 'login', component: Login},
 	]
 });
 

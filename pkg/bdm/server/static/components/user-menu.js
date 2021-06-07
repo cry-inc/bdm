@@ -2,10 +2,7 @@ export default {
 	data() {
 		return {
 			user: null,
-			usersEnabled: false,
-			showLoginForm: false,
-			userId: '',
-			password: ''
+			usersEnabled: false
 		};
 	},
 	async created() {
@@ -14,32 +11,13 @@ export default {
 		this.user = response.ok ? await response.json() : null;
 	},
 	methods: {
-		async toggleLogin() {
-			this.showLoginForm = !this.showLoginForm;
-		},
-		async login() {
-			const request = {
-				UserId: this.userId,
-				Password: this.password
-			};
-			const response = await fetch('/login', {
-				method: 'POST',
-				headers: {'Content-Type': 'application/json'},
-				body: JSON.stringify(request)
-			});
-			if (!response.ok) {
-				this.password = '';
-				alert('Login failed!');
-			} else {
-				this.userId = '';
-				this.password = '';
-				this.showLoginForm = false;
-				this.$router.go();
-			}
-		},
 		async logout() {
-			await fetch('/login', {method: 'DELETE'});
-			this.$router.go();
+			if (confirm('Log out?')) {
+				await fetch('/login', {method: 'DELETE'});
+				// Go to packages and reload
+				await this.$router.push('/');
+				await this.$router.go();
+			}
 		}
 	},
 	template: `
@@ -51,16 +29,11 @@ export default {
 			<span v-if="user && user.Admin">
 				| <router-link to="/users">Manage Users</router-link>
 			</span>
-			<button v-if="usersEnabled && !user" @click="toggleLogin">
-				Login
-			</button>
+			<span v-if="usersEnabled && !user">
+				| <router-link to="/login">Login</router-link>
+			</span>
 			<button v-if="user" @click="logout">
 				Logout
 			</button>
-			<div class="loginform" v-if="showLoginForm">
-				User ID: <input v-model="userId" placeholder="User ID"></input><br>
-				Password: <input v-model="password" type="password" placeholder="Password"></input><br>
-				<button @click="login">Login</button>
-			</div>
 		</div>`
 }
