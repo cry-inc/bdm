@@ -130,7 +130,7 @@ func (users *jsonUsers) CreateUser(user User, password string) error {
 		return fmt.Errorf("failed to compile regex: %w", err)
 	}
 	if !valid {
-		return fmt.Errorf("invalid user ID characters")
+		return fmt.Errorf("invalid user ID")
 	}
 
 	users.mutex.Lock()

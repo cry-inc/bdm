@@ -70,7 +70,7 @@ func createUsersPostHandler(users Users) http.HandlerFunc {
 		err = users.CreateUser(newUser, create.Password)
 		if err != nil {
 			log.Print(fmt.Errorf("failed to create new user: %w", err))
-			http.Error(writer, "Failed to create new user", http.StatusInternalServerError)
+			http.Error(writer, "Failed to create new user", http.StatusBadRequest)
 			return
 		}
 
