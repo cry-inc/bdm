@@ -16,21 +16,29 @@ type jsonToken struct {
 }
 
 type jsonTokens struct {
-	tokensFile string
-	tokens     map[string]jsonToken
-	mutex      sync.Mutex
-	users      Users
+	tokensFile    string
+	guestDownload bool
+	guestUpload   bool
+	tokens        map[string]jsonToken
+	mutex         sync.Mutex
+	users         Users
 }
 
-func CreateJsonTokens(tokensFile string, users Users) (Tokens, error) {
+func CreateJsonTokens(tokensFile string, users Users, guestDownload, guestUpload bool) (Tokens, error) {
 	if !users.Available() {
 		return nil, fmt.Errorf("user management does not support individual users")
 	}
 
+	if guestUpload && !guestDownload {
+		return nil, fmt.Errorf("guest uploading without guest downloading is not supported")
+	}
+
 	tokens := jsonTokens{
-		tokensFile: tokensFile,
-		tokens:     make(map[string]jsonToken),
-		users:      users,
+		tokensFile:    tokensFile,
+		guestDownload: guestDownload,
+		guestUpload:   guestUpload,
+		tokens:        make(map[string]jsonToken),
+		users:         users,
 	}
 
 	if !util.FileExists(tokens.tokensFile) {
@@ -203,10 +211,16 @@ func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
 }
 
 func (tokens *jsonTokens) CanRead(tokenId string) bool {
+	if tokens.guestDownload {
+		return true
+	}
 	return tokens.checkToken(tokenId, ReaderRole)
 }
 
 func (tokens *jsonTokens) CanWrite(tokenId string) bool {
+	if tokens.guestUpload {
+		return true
+	}
 	return tokens.checkToken(tokenId, WriterRole)
 }
 

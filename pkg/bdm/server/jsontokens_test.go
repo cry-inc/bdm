@@ -7,7 +7,7 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-func TestTokenDatabase(t *testing.T) {
+func TestJsonTokens(t *testing.T) {
 	const writeUser = "writer@foo.com"
 	const readUser = "reader@foo.com"
 	const adminUser = "admin@foo.com"
@@ -21,7 +21,9 @@ func TestTokenDatabase(t *testing.T) {
 	defer os.RemoveAll(usersFile)
 
 	// Create new token database
-	tokens, err := CreateJsonTokens(tokensFile, users)
+	guestDownload := false
+	guestUpload := false
+	tokens, err := CreateJsonTokens(tokensFile, users, guestDownload, guestUpload)
 	util.AssertNoError(t, err)
 	defer os.RemoveAll(tokensFile)
 
@@ -136,4 +138,58 @@ func containsToken(tokenId string, tokens []Token) bool {
 		}
 	}
 	return false
+}
+
+func TestGuestPermissions(t *testing.T) {
+	const tokensFile = "tokens.json"
+	const usersFile = "users.json"
+
+	// Create new user database
+	users, err := CreateJsonUsers(usersFile)
+	util.AssertNoError(t, err)
+	defer os.RemoveAll(usersFile)
+
+	{
+		// Create normal token database without guest permissions
+		guestDownload := false
+		guestUpload := false
+		tokens, err := CreateJsonTokens(tokensFile, users, guestDownload, guestUpload)
+		util.AssertNoError(t, err)
+		defer os.RemoveAll(tokensFile)
+
+		util.Assert(t, !tokens.CanRead(""))
+		util.Assert(t, !tokens.CanWrite(""))
+	}
+
+	{
+		// Create token database with guest downloading
+		guestDownload := true
+		guestUpload := false
+		tokens, err := CreateJsonTokens(tokensFile, users, guestDownload, guestUpload)
+		util.AssertNoError(t, err)
+		defer os.RemoveAll(tokensFile)
+
+		util.Assert(t, tokens.CanRead(""))
+		util.Assert(t, !tokens.CanWrite(""))
+	}
+
+	{
+		// Create token database with guest up- and downloading
+		guestDownload := true
+		guestUpload := true
+		tokens, err := CreateJsonTokens(tokensFile, users, guestDownload, guestUpload)
+		util.AssertNoError(t, err)
+		defer os.RemoveAll(tokensFile)
+
+		util.Assert(t, tokens.CanRead(""))
+		util.Assert(t, tokens.CanWrite(""))
+	}
+
+	{
+		// Create token database with forbidden guest permissions
+		guestDownload := false
+		guestUpload := true
+		_, err := CreateJsonTokens(tokensFile, users, guestDownload, guestUpload)
+		util.AssertError(t, err)
+	}
 }

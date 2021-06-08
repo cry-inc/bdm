@@ -11,7 +11,7 @@ import (
 func TestTokensGetHandler(t *testing.T) {
 	users := prepareTestUsers(t, "users.json")
 	defer os.Remove("users.json")
-	tokens, err := CreateJsonTokens("tokens.json", users)
+	tokens, err := CreateJsonTokens("tokens.json", users, false, false)
 	util.AssertNoError(t, err)
 	defer os.Remove("tokens.json")
 
@@ -59,7 +59,7 @@ func TestTokensGetHandler(t *testing.T) {
 func TestTokensPostDeleteHandler(t *testing.T) {
 	users := prepareTestUsers(t, "users.json")
 	defer os.Remove("users.json")
-	tokens, err := CreateJsonTokens("tokens.json", users)
+	tokens, err := CreateJsonTokens("tokens.json", users, false, false)
 	util.AssertNoError(t, err)
 	defer os.Remove("tokens.json")
 
