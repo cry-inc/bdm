@@ -18,9 +18,6 @@ func TestCreateJsonUsers(t *testing.T) {
 	users, err := CreateJsonUsers(usersFile)
 	util.AssertNoError(t, err)
 
-	// User management is available
-	util.Assert(t, users.Available())
-
 	// New DB should be empty
 	userList, err := users.GetUsers()
 	util.AssertNoError(t, err)

@@ -21,9 +21,6 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-const readToken = ""
-const writeToken = "1234write"
-const adminToken = ""
 const storeFolder = "test/store"
 const outputFolder = "test/output"
 const cacheFolder = "test/cache"
@@ -33,6 +30,10 @@ const packageFolderSmall = "test/example"
 const packageNameBig = "bar"
 const packageFolderBig = "test/big"
 const unzipFolder = "test/unzipped"
+
+// will be set later during test setup
+var readToken string
+var writeToken string
 
 func TestServerClient(t *testing.T) {
 	// Prepare Cleanup
@@ -88,16 +89,16 @@ func TestServerJsonHandlers(t *testing.T) {
 	defer stopTestingServer(server, stopped)
 
 	// Check empty manifest list on fresh server
-	getAndCompareString(t, "/manifests", "application/json", "[]")
+	getAndCompareString(t, "/manifests", readToken, "application/json", "[]")
 
 	// Publish a small test package
 	publishSmallTestPackage(t)
 
 	// Look for fresh test package in the list
-	getAndCompareString(t, "/manifests", "application/json", "[{\"Name\":\"foo\"}]")
+	getAndCompareString(t, "/manifests", readToken, "application/json", "[{\"Name\":\"foo\"}]")
 
 	// List versions of the fresh test package
-	getAndCompareString(t, "/manifests/foo", "application/json", "[{\"Version\":1}]")
+	getAndCompareString(t, "/manifests/foo", readToken, "application/json", "[{\"Version\":1}]")
 }
 
 func TestServerFileHandler(t *testing.T) {
@@ -114,35 +115,35 @@ func TestServerFileHandler(t *testing.T) {
 	// Small binary file
 	expectedData := string([]byte{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0})
 	urlPath := "/files/foo/1/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/data.bin"
-	getAndCompareString(t, urlPath, "application/octet-stream", expectedData)
+	getAndCompareString(t, urlPath, readToken, "application/octet-stream", expectedData)
 
 	// Empty file
 	urlPath = "/files/foo/1/af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262/empty.txt"
-	getAndCompareString(t, urlPath, "application/octet-stream", "")
+	getAndCompareString(t, urlPath, readToken, "application/octet-stream", "")
 
 	// Wrong file name
 	urlPath = "/files/foo/1/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/wrong.name"
-	httpGetStatusCode(t, urlPath, 404)
+	httpGetStatusCode(t, urlPath, readToken, 404)
 
 	// Wrong package name
 	urlPath = "/files/blaaaaa/1/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/data.bin"
-	httpGetStatusCode(t, urlPath, 404)
+	httpGetStatusCode(t, urlPath, readToken, 404)
 
 	// Invalid package name
 	urlPath = "/files/bla+()aaaa/1/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/data.bin"
-	httpGetStatusCode(t, urlPath, 400)
+	httpGetStatusCode(t, urlPath, readToken, 400)
 
 	// Wrong package version
 	urlPath = "/files/foo/666/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/data.bin"
-	httpGetStatusCode(t, urlPath, 404)
+	httpGetStatusCode(t, urlPath, readToken, 404)
 
 	// Invalid package version
 	urlPath = "/files/foo/no-number/213151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b93681a6/data.bin"
-	httpGetStatusCode(t, urlPath, 400)
+	httpGetStatusCode(t, urlPath, readToken, 400)
 
 	// Wrong hash
 	urlPath = "/files/foo/1/666151e5833fecb107899dfd0c8baca0fb671d4017fbd9361c8007b7b9368666/data.bin"
-	httpGetStatusCode(t, urlPath, 404)
+	httpGetStatusCode(t, urlPath, readToken, 404)
 }
 
 func TestServerGzipFileHandler(t *testing.T) {
@@ -159,7 +160,7 @@ func TestServerGzipFileHandler(t *testing.T) {
 
 	// Request file under test
 	urlPath := "/files/bar/1/e22e4bb46ad3e963fe059dcd969c036bd556a020d1de2d8cbd393a19ee74eb8c/testfile.dat"
-	body, headers, err := httpGet(urlPath)
+	body, headers, err := httpGet(urlPath, readToken)
 	util.AssertNoError(t, err)
 
 	// File is big enough to trigger gzip compression
@@ -194,7 +195,7 @@ func TestServerZipHandler(t *testing.T) {
 
 	// Request ZIP of package
 	urlPath := "/zip/foo/1"
-	body, headers, err := httpGet(urlPath)
+	body, headers, err := httpGet(urlPath, readToken)
 	util.AssertNoError(t, err)
 
 	// Content type must be ZIP
@@ -237,7 +238,7 @@ func TestServerStaticHandler(t *testing.T) {
 
 	// Request UI
 	urlPath := "/"
-	body, headers, err := httpGet(urlPath)
+	body, headers, err := httpGet(urlPath, readToken)
 	util.AssertNoError(t, err)
 
 	// Content type must be HTML
@@ -249,7 +250,7 @@ func TestServerStaticHandler(t *testing.T) {
 
 	// Request favicon
 	urlPath = "/favicon.ico"
-	body, headers, err = httpGet(urlPath)
+	body, headers, err = httpGet(urlPath, readToken)
 	util.AssertNoError(t, err)
 
 	// Check content type
@@ -264,9 +265,31 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	util.AssertNoError(t, err)
 
 	limits := bdm.ManifestLimits{}
-	users := server.CreateNoUsers()
-	tokens := server.CreateSimpleTokens(readToken, writeToken, adminToken)
+	users, err := server.CreateJsonUsers("./users.json")
+	util.AssertNoError(t, err)
+	defer os.Remove("./users.json")
+	tokens, err := server.CreateJsonTokens("./tokens.json", users, false, false)
+	util.AssertNoError(t, err)
+	defer os.Remove("./tokens.json")
 	handler := server.CreateRouter(packageStore, &limits, users, tokens)
+
+	err = users.CreateUser(server.User{
+		Id: "admin",
+		Roles: server.Roles{
+			Admin:  true,
+			Writer: true,
+			Reader: true,
+		},
+	}, "mypassword")
+	util.AssertNoError(t, err)
+
+	rt, err := tokens.CreateToken("admin", &server.Roles{Reader: true})
+	util.AssertNoError(t, err)
+	readToken = rt.Id
+
+	wt, err := tokens.CreateToken("admin", &server.Roles{Writer: true, Reader: true})
+	util.AssertNoError(t, err)
+	writeToken = wt.Id
 
 	server := &http.Server{Addr: "127.0.0.1:2323", Handler: handler}
 	stopped := make(chan bool)
@@ -329,12 +352,13 @@ func publishBigTestPackage(t *testing.T) {
 	util.Assert(t, len(manifest.Files) > 0)
 }
 
-func httpGet(path string) ([]byte, http.Header, error) {
+func httpGet(path, token string) ([]byte, http.Header, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "http://127.0.0.1:2323"+path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
+	req.Header.Set("bdm-api-token", token)
 	req.Header.Set("Accept-Encoding", "gzip")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -351,15 +375,21 @@ func httpGet(path string) ([]byte, http.Header, error) {
 	return body, resp.Header, nil
 }
 
-func httpGetStatusCode(t *testing.T, path string, statusCode int) {
-	resp, err := http.Get("http://127.0.0.1:2323" + path)
+func httpGetStatusCode(t *testing.T, path, token string, statusCode int) {
+	t.Helper()
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://127.0.0.1:2323"+path, nil)
+	util.AssertNoError(t, err)
+	req.Header.Set("bdm-api-token", token)
+	resp, err := client.Do(req)
 	util.AssertNoError(t, err)
 	defer resp.Body.Close()
 	util.Assert(t, resp.StatusCode == statusCode)
 }
 
-func getAndCompareString(t *testing.T, path, expectedType, expectedStr string) {
-	body, header, err := httpGet(path)
+func getAndCompareString(t *testing.T, path, token, expectedType, expectedStr string) {
+	t.Helper()
+	body, header, err := httpGet(path, token)
 	util.AssertNoError(t, err)
 	util.AssertEqualString(t, expectedType, header["Content-Type"][0])
 	util.AssertEqualString(t, expectedStr, string(body))

@@ -97,10 +97,6 @@ func (users *jsonUsers) saveUsers() error {
 	return nil
 }
 
-func (users *jsonUsers) Available() bool {
-	return true
-}
-
 func (users *jsonUsers) GetUsers() ([]string, error) {
 	users.mutex.Lock()
 	defer users.mutex.Unlock()

@@ -5,13 +5,7 @@ type User struct {
 	Roles
 }
 
-// The Users interface represents a user database that bundles all user management
-// functionailty for the servers. Since the server can be also used without individual
-// users accounts, its possible Available() returns false. This means users are
-// disabled and all other methods will always return an error.
 type Users interface {
-	Available() bool
-
 	GetUsers() ([]string, error)
 
 	CreateUser(user User, password string) error

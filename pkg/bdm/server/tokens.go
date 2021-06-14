@@ -10,7 +10,6 @@ type Tokens interface {
 	CanWrite(token string) bool
 	IsAdmin(token string) bool
 
-	NoUserMode() bool
 	GetTokens(userId string) ([]Token, error)
 	CreateToken(userId string, roles *Roles) (*Token, error)
 	DeleteToken(tokenId string) error

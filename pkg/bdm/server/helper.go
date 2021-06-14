@@ -39,9 +39,6 @@ func hasWriteToken(request *http.Request, tokens Tokens) bool {
 }
 
 func getCurrentUser(request *http.Request, users Users) (*User, error) {
-	if !users.Available() {
-		return nil, fmt.Errorf("user support is disabled")
-	}
 	cookie, err := request.Cookie("login")
 	if err != nil {
 		return nil, fmt.Errorf("no login cookie found: %w", err)
@@ -66,11 +63,6 @@ type UserHandlerFunc func(writer http.ResponseWriter, req *http.Request, authUse
 // Both users are handed over as *User arguments.
 func extractUsers(users Users, handler UserHandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !users.Available() {
-			http.Error(writer, "User system is disabled", http.StatusServiceUnavailable)
-			return
-		}
-
 		authUser, err := getCurrentUser(req, users)
 		if err != nil {
 			http.Error(writer, "Log in required", http.StatusForbidden)

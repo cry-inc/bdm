@@ -25,10 +25,6 @@ type jsonTokens struct {
 }
 
 func CreateJsonTokens(tokensFile string, users Users, guestDownload, guestUpload bool) (Tokens, error) {
-	if !users.Available() {
-		return nil, fmt.Errorf("user management does not support individual users")
-	}
-
 	if guestUpload && !guestDownload {
 		return nil, fmt.Errorf("guest uploading without guest downloading is not supported")
 	}
@@ -102,10 +98,6 @@ func (tokens *jsonTokens) saveTokens() error {
 	}
 
 	return nil
-}
-
-func (tokens *jsonTokens) NoUserMode() bool {
-	return false
 }
 
 func (tokens *jsonTokens) GetTokens(userId string) ([]Token, error) {
