@@ -35,7 +35,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-writetoken=1234", "-store=test/store"]
+            "args": ["-server", "-guestreading", "-guestwriting", "-store=test/store"]
         },
         {
             "name": "Server HTTPS",
@@ -44,7 +44,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-writetoken=1234", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
+            "args": ["-server", "-guestreading", "-guestwriting", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
         },
         {
             "name": "Validate",

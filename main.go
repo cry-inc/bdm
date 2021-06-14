@@ -43,6 +43,8 @@ func main() {
 	letsEncryptDomain := flag.String("letsencrypt", "", "Domain name to enable HTTPS with automatic LE certificates. Will also start an HTTP server on port 80 that needs to be reachable from the internet.")
 	certCacheFolder := flag.String("certcache", "./certs", "Cache folder for LE certificates.")
 	storeFolder := flag.String("store", "./store", "Specifies location of the servers package repository on disk.")
+	guestReading := flag.Bool("guestreading", false, "Use this flag to allow everyone without an account to browse and download packages.")
+	guestWriting := flag.Bool("guestwriting", false, "Use this flag to allow everyone without an account to upload new packages. Not recommended!")
 	usersFile := flag.String("usersfile", "./users.json", "Specifies location of the servers JSON user database.")
 	tokensFile := flag.String("tokensfile", "./tokens.json", "Specifies location of the servers JSON tokens database.")
 	defaultUser := flag.String("defaultuser", "admin", "Specifies the name of the first user that will be automatically generated.")
@@ -70,7 +72,7 @@ func main() {
 	if *genTokenMode {
 		generateAPIToken()
 	} else if *serverMode {
-		startServer(*port, &limits, *storeFolder, *usersFile, *defaultUser, *tokensFile, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
+		startServer(*port, &limits, *storeFolder, *usersFile, *defaultUser, *tokensFile, *guestReading, *guestWriting, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
 	} else if *validateMode {
 		validateStore(*storeFolder)
 	} else if *uploadMode {
@@ -102,7 +104,7 @@ func generateAPIToken() {
 	fmt.Println("API Token: " + apiToken)
 }
 
-func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
+func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile string, guestReading, guestWriting bool, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
 	if port == 0 || float64(port) >= math.Pow(2, 16) {
 		log.Fatal("Invalid port number")
 	}
@@ -139,9 +141,13 @@ func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, de
 		fmt.Printf("Created default user '%s' with password '%s'\n", defaultUser, password)
 	}
 
-	tokens, err := server.CreateJsonTokens(tokensFile, users, false, false)
+	tokens, err := server.CreateJsonTokens(tokensFile, users, guestReading, guestWriting)
 	if err != nil {
 		log.Fatalf("Failed to open or create token database: %v", err)
+	}
+
+	if guestWriting {
+		fmt.Println("WARNING: Guest upload of new packages is enabled. This is not recommended!")
 	}
 
 	router := server.CreateRouter(packageStore, limits, users, tokens)
@@ -165,10 +171,6 @@ func uploadPackage(packageName, inputFolder, serverURL, apiToken string) {
 	validName := bdm.ValidatePackageName(packageName)
 	if !validName {
 		log.Fatal("Invalid package name. Only lower case a-z, 0-9 and the characters - _ are allowed")
-	}
-
-	if len(apiToken) == 0 {
-		log.Fatal("Missing API token")
 	}
 
 	if len(inputFolder) == 0 {
