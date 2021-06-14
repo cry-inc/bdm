@@ -31,7 +31,6 @@ func main() {
 	downloadMode := flag.Bool("download", false, "Enables download mode to get remote packages.")
 	serverMode := flag.Bool("server", false, "Enables server mode to run a package repository server.")
 	checkMode := flag.Bool("check", false, "Enables check mode to compare local folder against an existing package.")
-	genTokenMode := flag.Bool("gentoken", false, "Generates a random new API token.")
 	aboutMode := flag.Bool("about", false, "Show application version and build information.")
 	validateMode := flag.Bool("validate", false, "Validates a package store to make sure all contained data is valid.")
 
@@ -69,9 +68,7 @@ func main() {
 		MaxPathLength:  *maxPathLength,
 	}
 
-	if *genTokenMode {
-		generateAPIToken()
-	} else if *serverMode {
+	if *serverMode {
 		startServer(*port, &limits, *storeFolder, *usersFile, *defaultUser, *tokensFile, *guestReading, *guestWriting, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
 	} else if *validateMode {
 		validateStore(*storeFolder)
@@ -97,11 +94,6 @@ func showAbout() {
 	fmt.Printf("  Go:      %s\n", runtime.Version())
 	fmt.Printf("  OS:      %s\n", runtime.GOOS)
 	fmt.Printf("  Arch:    %s\n", runtime.GOARCH)
-}
-
-func generateAPIToken() {
-	apiToken := util.GenerateAPIToken()
-	fmt.Println("API Token: " + apiToken)
 }
 
 func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile string, guestReading, guestWriting bool, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
