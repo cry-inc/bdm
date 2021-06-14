@@ -25,35 +25,33 @@ var commitHash = "n/a"
 // Date string of this build (optionally injected during build)
 var buildDate = "n/a"
 
-const defaultPort = 2323
-const defaultStoreFolder = "./store"
-const defaultCertCacheFolder = "./certs"
-
 func main() {
 	// Application Modes
-	uploadMode := flag.Bool("upload", false, "Enables upload mode to publish new packages")
-	downloadMode := flag.Bool("download", false, "Enables download mode to get remote packages")
-	serverMode := flag.Bool("server", false, "Enables server mode to run a package repository server")
-	checkMode := flag.Bool("check", false, "Enables check mode to compare local folder against an existing package")
-	genTokenMode := flag.Bool("gentoken", false, "Generates a random new API token")
-	aboutMode := flag.Bool("about", false, "Show application version and build information")
+	uploadMode := flag.Bool("upload", false, "Enables upload mode to publish new packages.")
+	downloadMode := flag.Bool("download", false, "Enables download mode to get remote packages.")
+	serverMode := flag.Bool("server", false, "Enables server mode to run a package repository server.")
+	checkMode := flag.Bool("check", false, "Enables check mode to compare local folder against an existing package.")
+	genTokenMode := flag.Bool("gentoken", false, "Generates a random new API token.")
+	aboutMode := flag.Bool("about", false, "Show application version and build information.")
 	validateMode := flag.Bool("validate", false, "Validates a package store to make sure all contained data is valid.")
 
 	// Application Arguments
-	port := flag.Uint("port", defaultPort, "Port for HTTP repository server")
-	token := flag.String("token", "", "API token used for authorization in client mode")
-	writeToken := flag.String("writetoken", "", "API token used for write access in server mode")
-	httpsCert := flag.String("httpscert", "", "If supplied together with httpskey this will enable HTTPS")
-	httpsKey := flag.String("httpskey", "", "If supplied together with httpscert this will enable HTTPS")
+	port := flag.Uint("port", 2323, "Port for HTTP server of the package repository in server mode.")
+	token := flag.String("token", "", "API token used for authorization in client mode.")
+	httpsCert := flag.String("httpscert", "", "If supplied together with httpskey this will enable HTTPS.")
+	httpsKey := flag.String("httpskey", "", "If supplied together with httpscert this will enable HTTPS.")
 	letsEncryptDomain := flag.String("letsencrypt", "", "Domain name to enable HTTPS with automatic LE certificates. Will also start an HTTP server on port 80 that needs to be reachable from the internet.")
-	certCacheFolder := flag.String("certcache", defaultCertCacheFolder, "Cache folder for LE certificates.")
-	storeFolder := flag.String("store", defaultStoreFolder, "Specifies location of the package repository on disk")
-	packageVersion := flag.Uint("version", 0, "Package version to download or check")
-	packageName := flag.String("package", "", "Specifies name of the package to be uploaded, downloaded or checked")
-	inputFolder := flag.String("input", "", "Input path to folder that contains the package data to be published or checked")
-	outputFolder := flag.String("output", "", "Output path to folder that receives the downloaded package data")
-	remoteServer := flag.String("remote", "", "Remote package server URL for downloading packages")
-	cacheFolder := flag.String("cache", "", "Local cache folder to avoid re-downloading packages from a remote server")
+	certCacheFolder := flag.String("certcache", "./certs", "Cache folder for LE certificates.")
+	storeFolder := flag.String("store", "./store", "Specifies location of the servers package repository on disk.")
+	usersFile := flag.String("usersfile", "./users.json", "Specifies location of the servers JSON user database.")
+	tokensFile := flag.String("tokensfile", "./tokens.json", "Specifies location of the servers JSON tokens database.")
+	defaultUser := flag.String("defaultuser", "admin", "Specifies the name of the first user that will be automatically generated.")
+	packageVersion := flag.Uint("version", 0, "Package version to download or check.")
+	packageName := flag.String("package", "", "Specifies name of the package to be uploaded, downloaded or checked.")
+	inputFolder := flag.String("input", "", "Input path to folder that contains the package data to be published or checked.")
+	outputFolder := flag.String("output", "", "Output path to folder that receives the downloaded package data.")
+	remoteServer := flag.String("remote", "", "Remote package server URL for downloading packages.")
+	cacheFolder := flag.String("cache", "", "Local cache folder to avoid re-downloading packages from a remote server.")
 	clean := flag.Bool("clean", false, "Deletes all non-package files in the output folder in download mode and ensures that there are no non-package files in check mode.")
 	maxPathLength := flag.Int("maxpath", 0, "Maximum length of paths inside packages. Default is 0, which means unlimited.")
 	maxFileCount := flag.Int("maxfiles", 0, "Maximum bumber of files per package. Default is 0, which means unlimited.")
@@ -72,7 +70,7 @@ func main() {
 	if *genTokenMode {
 		generateAPIToken()
 	} else if *serverMode {
-		startServer(*port, &limits, *writeToken, *storeFolder, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
+		startServer(*port, &limits, *storeFolder, *usersFile, *defaultUser, *tokensFile, *httpsCert, *httpsKey, *letsEncryptDomain, *certCacheFolder)
 	} else if *validateMode {
 		validateStore(*storeFolder)
 	} else if *uploadMode {
@@ -104,13 +102,9 @@ func generateAPIToken() {
 	fmt.Println("API Token: " + apiToken)
 }
 
-func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
+func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
 	if port == 0 || float64(port) >= math.Pow(2, 16) {
 		log.Fatal("Invalid port number")
-	}
-
-	if len(writeToken) == 0 {
-		log.Fatal("Missing write token")
 	}
 
 	packageStore, err := store.New(storePath)
@@ -118,8 +112,38 @@ func startServer(port uint, limits *bdm.ManifestLimits, writeToken, storePath, c
 		log.Fatalf("Failed to open or create package store: %v", err)
 	}
 
-	users := server.CreateNoUsers()
-	tokens := server.CreateSimpleTokens("", writeToken, "")
+	users, err := server.CreateJsonUsers(usersFile)
+	if err != nil {
+		log.Fatalf("Failed to open or create user database: %v", err)
+	}
+
+	userList, err := users.GetUsers()
+	if err != nil {
+		log.Fatalf("Failed to get list of existing users: %v", err)
+	}
+
+	// Create default user if there are no users
+	if len(userList) == 0 {
+		password := util.GenerateRandomHexString(8)
+		err = users.CreateUser(server.User{
+			Id: defaultUser,
+			Roles: server.Roles{
+				Admin:  true,
+				Writer: true,
+				Reader: true,
+			},
+		}, password)
+		if err != nil {
+			log.Fatalf("Failed to create default user: %v", err)
+		}
+		fmt.Printf("Created default user '%s' with password '%s'\n", defaultUser, password)
+	}
+
+	tokens, err := server.CreateJsonTokens(tokensFile, users, false, false)
+	if err != nil {
+		log.Fatalf("Failed to open or create token database: %v", err)
+	}
+
 	router := server.CreateRouter(packageStore, limits, users, tokens)
 
 	p := uint16(port)
