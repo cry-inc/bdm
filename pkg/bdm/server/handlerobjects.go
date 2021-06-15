@@ -10,9 +10,9 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/store"
 )
 
-func createCheckObjectsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createCheckObjectsHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -35,9 +35,9 @@ func createCheckObjectsHandler(packageStore store.Store, tokens Tokens) http.Han
 	}
 }
 
-func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
+func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLimits, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasWriteToken(req, tokens) {
+		if !hasWritePermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -60,9 +60,9 @@ func createUploadObjectsHandler(packageStore store.Store, limits *bdm.ManifestLi
 	}
 }
 
-func createDownloadObjectsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createDownloadObjectsHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

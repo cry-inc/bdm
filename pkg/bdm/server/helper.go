@@ -10,7 +10,7 @@ import (
 
 const apiTokenField = "bdm-api-token"
 
-// Ensures that cliensts do not send huge bodies to create server issues
+// Ensures that clients do not send huge bodies to create server issues
 func enforceMaxBodySize(handler http.HandlerFunc, maxSize int64) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		req.Body = http.MaxBytesReader(writer, req.Body, maxSize)
@@ -18,26 +18,43 @@ func enforceMaxBodySize(handler http.HandlerFunc, maxSize int64) http.HandlerFun
 	}
 }
 
+// Limit request bodies for requests with small JSON payloads
 func enforceSmallBodySize(handler http.HandlerFunc) http.HandlerFunc {
 	const maxSmallBodySize = 1024 * 100 // 100 kB is enough for small JSON payloads
 	return enforceMaxBodySize(handler, maxSmallBodySize)
 }
 
+// Limit request bodies for requests with bigger JSON payloads
 func enforceJsonBodySize(handler http.HandlerFunc) http.HandlerFunc {
 	// Use size limit from base package that is used everywhere for JSON data
 	return enforceMaxBodySize(handler, bdm.JsonSizeLimit)
 }
 
-func hasReadToken(request *http.Request, tokens Tokens) bool {
+// Checks if a request contains permissions for reading.
+// Checks for an BDM API token (typically used by the CLI client) with read permissions
+// or for auth tokens (used by the Web UI logins) of users with read permissions.
+func hasReadPermission(request *http.Request, users Users, tokens Tokens) bool {
 	apiToken := request.Header.Get(apiTokenField)
-	return tokens.CanRead(apiToken)
+	if tokens.CanRead(apiToken) {
+		return true
+	}
+	user, err := getCurrentUser(request, users)
+	return err == nil && user.Reader
 }
 
-func hasWriteToken(request *http.Request, tokens Tokens) bool {
+// Checks if a request contains permissions for writing.
+// Checks for an BDM API token (typically used by the CLI client) with write permissions
+// or for auth tokens (used by the Web UI logins) of users with write permissions.
+func hasWritePermission(request *http.Request, users Users, tokens Tokens) bool {
 	apiToken := request.Header.Get(apiTokenField)
-	return tokens.CanWrite(apiToken)
+	if tokens.CanWrite(apiToken) {
+		return true
+	}
+	user, err := getCurrentUser(request, users)
+	return err == nil && user.Writer
 }
 
+// Extracts the logged in Web UI user identified by an auth token from an incoming request
 func getCurrentUser(request *http.Request, users Users) (*User, error) {
 	cookie, err := request.Cookie("login")
 	if err != nil {

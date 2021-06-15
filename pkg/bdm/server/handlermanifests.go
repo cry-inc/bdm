@@ -14,9 +14,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func createManifestHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createManifestHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -53,9 +53,9 @@ func createManifestHandler(packageStore store.Store, tokens Tokens) http.Handler
 	}
 }
 
-func createManifestNamesHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createManifestNamesHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -85,9 +85,9 @@ func createManifestNamesHandler(packageStore store.Store, tokens Tokens) http.Ha
 	}
 }
 
-func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createManifestVersionsHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -128,9 +128,9 @@ func createManifestVersionsHandler(packageStore store.Store, tokens Tokens) http
 	}
 }
 
-func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, tokens Tokens) http.HandlerFunc {
+func createPublishManifestHandler(packageStore store.Store, limits *bdm.ManifestLimits, users Users, tokens Tokens) http.HandlerFunc {
 	return enforceJsonBodySize(func(writer http.ResponseWriter, req *http.Request) {
-		if !hasWriteToken(req, tokens) {
+		if !hasWritePermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}

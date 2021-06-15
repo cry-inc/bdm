@@ -15,9 +15,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func createFilesHandler(packageStore store.Store, tokens Tokens) http.HandlerFunc {
+func createFilesHandler(packageStore store.Store, users Users, tokens Tokens) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if !hasReadToken(req, tokens) {
+		if !hasReadPermission(req, users, tokens) {
 			http.Error(writer, "Invalid token", http.StatusUnauthorized)
 			return
 		}
