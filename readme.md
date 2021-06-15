@@ -43,9 +43,9 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 ## Docker
 
 1. Use `docker build . -t=bdm` to build and tag the Docker image
-2. Run `docker run --rm -p 2323:2323 -e BDM_WRITE_TOKEN=mysecret -v /host/folder:/bdmstore bdm` to start a HTTP server on the (default) port 2323 and a persistent package store on the host file system
-3. Run `docker run --rm -p 443:443 -e BDM_WRITE_TOKEN=mysecret -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/bdmstore:/bdmstore bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
-4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_WRITE_TOKEN=mysecret -e BDM_LETS_ENCRYPT=mydomain.com -v /host/bdmstore:/bdmstore -v /host/bdmcerts:/bdmcerts bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
+2. Run `docker run --rm -p 2323:2323 -v /host/folder:/bdmdata bdm` to start a HTTP server on the (default) port 2323 and a persistent data location on the host file system. BDM will create an default admin account and display the randomly generated intial password during the first start.
+3. Run `docker run --rm -p 443:443 -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/folder:/bdmdata bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
+4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_LETS_ENCRYPT=mydomain.com -v /host/folder:/bdmdata bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
 5. Check the Dockerfile for additional optional environment variables.
 
 ## User accounts and tokens
