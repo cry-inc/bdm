@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/cry-inc/bdm)](https://goreportcard.com/report/github.com/cry-inc/bdm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-The Binary Data Mangager is a system that allows users to create a versioned repository of packages. A package is just a folder with a bunch of files in it. Packages are immutable, once published they stay always the same and cannot be modified. If you want to change a package, you must publish a new version of the package. The system was designed to handle binary assets used for testing in software development, but can be also used for other kinds of assets and artifacts that can be represented as a set of files.
+The Binary Data Mangager is a system that allows users to create a versioned repository of packages. A package is just a folder with a bunch of files in it. Packages are immutable, once published they stay always the same and cannot be modified. If you want to change a package, you must publish a new version of the package. The system was designed to handle binary assets used for testing in software development, but can be also used for other kinds of assets and artifacts that can be represented as a simple set of files.
 
 The system works centralized with a repository server. This server holds all packages. Clients can upload new packages or download them from the server. The server uses HTTP to communicate with clients.
 
@@ -19,6 +19,8 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 * Compressed server side storage and network data transfer (zstd)
 * Optional client side caching to avoid network transfers
 * Intelligent downloading/restore of packages to minimize time and costs
+* Simple user system with separate read, write and admin permissions
+* Web interface can be used to create tokens for use with the command line client or HTTP API
 * Simple web interface for browsing and downloading packages without a client application
 * Built-in HTTPS support for automated Let's Encrypt certificate (or bring you own certificate)
 * Docker image for easy deployment (see below)
@@ -26,19 +28,17 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 ## Quickstart
 
 1. Show version number of application: `bdm -about`
-2. Generate and print a new random API token: `bdm -gentoken`
-3. Start the repository server: `bdm -server -writetoken=mytoken -port=2323`
-4. Upload a new package: `bdm -upload -package="foo" -input="path/to/foo-folder/" -token=mytoken -remote="http://127.0.0.1:2323"`
-5. Download the package: `bdm -download -package="foo" -version=1 -output="where/to/put/foo/" -remote="http://127.0.0.1:2323"`
-6. Verify existing download: `bdm -check -package="foo" -version=1 -input="where/to/check/foo/" -remote="http://127.0.0.1:2323"`
-7. Open the URL `http://127.0.0.1:2323` in your browser for the web UI to inspect packages
-8. Run `bdm -help` to show additional CLI documentation
+2. Start the repository server: `bdm -server -guestreading -guestwriting -port=2323`
+3. Upload a new package: `bdm -upload -package="foo" -input="path/to/foo-folder/" -remote="http://127.0.0.1:2323"`
+4. Download the package: `bdm -download -package="foo" -version=1 -output="where/to/put/foo/" -remote="http://127.0.0.1:2323"`
+5. Verify existing download: `bdm -check -package="foo" -version=1 -input="where/to/check/foo/" -remote="http://127.0.0.1:2323"`
+6. Open the URL `http://127.0.0.1:2323` in your browser for the web UI to inspect packages
+7. Run `bdm -help` to show additional CLI documentation
 
 ## Limitations
 
 * Packages cannot contain empty folders, just like git repositories
-* Everybody can see and download all packages using the client or web UI
-* Uploading is restricted using a single API token for all users
+* No support or integration of existing account systems
 
 ## Docker
 
@@ -47,6 +47,14 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 3. Run `docker run --rm -p 443:443 -e BDM_WRITE_TOKEN=mysecret -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/bdmstore:/bdmstore bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
 4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_WRITE_TOKEN=mysecret -e BDM_LETS_ENCRYPT=mydomain.com -v /host/bdmstore:/bdmstore -v /host/bdmcerts:/bdmcerts bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
 5. Check the Dockerfile for additional optional environment variables.
+
+## User accounts and tokens
+
+To avoid all accounts and permissions, you can use the arguments `-guestreading` and `-guestwriting` when starting the server. This will allow everyone to download and upload packages without any restrictions. THIS IS NOT RECOMMENDED! Even for private networks I suggested to at least use a shared secret token for writing to restrict uploading new packages.
+
+When starting the server for the first time, BDM will create an default admin account with a random password. This default admin is only created if the user database is empty. You can customize the name of the default admin account using the argument `-defaultuser youadminname`. The random password will be printed only once during startup to the console. You can use the password to log into the web interface and create more users and tokens.
+
+A token is a kind of special long password that can be used without a user name. You need them to upload and download packages with the client if guest access is not enabled. Each token can have specific permissions and belongs to a user. If the user no longer exists, the token will stop working. If a user no longer has the permissions required by the token, it will also stop working. Tokens can be created and deleted in your profile in to the web interface.
 
 ## Why another package server/client?
 
