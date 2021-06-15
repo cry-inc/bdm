@@ -5,7 +5,7 @@ export default {
 	data() {
 		return {
 			loaded: false,
-			manifest: {},
+			manifest: null,
 			size: null,
 			published: null
 		};
@@ -22,10 +22,10 @@ export default {
 	template: `
 		<div v-if="loaded">
 			<h1>{{package}} Version {{version}}</h1>
-			<div class="error" v-if="!manifest.Files">
-				The {{package}} in version {{version}} does not exist!
+			<div class="error" v-if="!manifest">
+				The package {{package}} in version {{version}} does not exist!
 			</div>
-			<div>
+			<div v-if="manifest">
 				<table>
 					<tr>
 						<th>Name</th>
