@@ -1,13 +1,11 @@
 export default {
 	data() {
 		return {
-			user: null,
-			usersEnabled: false
+			user: null
 		};
 	},
 	async created() {
 		const response = await fetch('login');
-		this.usersEnabled = response.status !== 503;
 		this.user = response.ok ? await response.json() : null;
 	},
 	methods: {
@@ -22,14 +20,16 @@ export default {
 	},
 	template: `
 		<div class="usermenu">
-			<span class="guest" v-if="!usersEnabled || !user">
+			<span class="guest" v-if="!user">
 				Guest
 			</span>
-			<router-link v-if="user" v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
+			<router-link v-if="user" v-bind:to="'/users/' + user.Id">
+				{{user.Id}}
+			</router-link>
 			<span v-if="user && user.Admin">
 				| <router-link to="/users">Manage Users</router-link>
 			</span>
-			<span v-if="usersEnabled && !user">
+			<span v-if="!user">
 				| <router-link to="/login">Login</router-link>
 			</span>
 			<button v-if="user" @click="logout">
