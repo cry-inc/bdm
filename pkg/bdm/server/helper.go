@@ -8,8 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const apiTokenField = "bdm-api-token"
-
 // Ensures that clients do not send huge bodies to create server issues
 func enforceMaxBodySize(handler http.HandlerFunc, maxSize int64) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
@@ -34,7 +32,7 @@ func enforceJsonBodySize(handler http.HandlerFunc) http.HandlerFunc {
 // Checks for an BDM API token (typically used by the CLI client) with read permissions
 // or for auth tokens (used by the Web UI logins) of users with read permissions.
 func hasReadPermission(request *http.Request, users Users, tokens Tokens) bool {
-	apiToken := request.Header.Get(apiTokenField)
+	apiToken := request.Header.Get(bdm.ApiTokenHeader)
 	if tokens.CanRead(apiToken) {
 		return true
 	}
@@ -46,7 +44,7 @@ func hasReadPermission(request *http.Request, users Users, tokens Tokens) bool {
 // Checks for an BDM API token (typically used by the CLI client) with write permissions
 // or for auth tokens (used by the Web UI logins) of users with write permissions.
 func hasWritePermission(request *http.Request, users Users, tokens Tokens) bool {
-	apiToken := request.Header.Get(apiTokenField)
+	apiToken := request.Header.Get(bdm.ApiTokenHeader)
 	if tokens.CanWrite(apiToken) {
 		return true
 	}

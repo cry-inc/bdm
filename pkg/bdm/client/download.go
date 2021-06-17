@@ -65,7 +65,7 @@ func DownloadManifest(serverURL, apiToken, name string, version uint) (*bdm.Mani
 		return nil, fmt.Errorf("error creating GET request for URL %s: %w", url, err)
 	}
 
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -269,7 +269,7 @@ func DownloadFiles(serverURL, apiToken string, manifest *bdm.Manifest, outputFol
 		return fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
 
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {

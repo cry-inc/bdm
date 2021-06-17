@@ -94,7 +94,7 @@ func findFilesToUpload(manifest *bdm.Manifest, serverURL, apiToken string) ([]bd
 		return nil, fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
 
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -179,7 +179,7 @@ func uploadFiles(files []bdm.File, inputFolder, serverURL, apiToken string) erro
 	if err != nil {
 		return fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -236,7 +236,7 @@ func publishManifest(manifest *bdm.Manifest, serverURL, apiToken string) (*bdm.M
 	if err != nil {
 		return nil, fmt.Errorf("error creating POST request for URL %s: %w", url, err)
 	}
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -281,7 +281,7 @@ func checkRemoteManifestLimits(manifest *bdm.Manifest, serverURL, apiToken strin
 		return fmt.Errorf("error creating GET request for URL %s: %w", url, err)
 	}
 
-	req.Header.Add(apiTokenField, apiToken)
+	req.Header.Add(bdm.ApiTokenHeader, apiToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {

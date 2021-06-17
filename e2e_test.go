@@ -358,7 +358,7 @@ func httpGet(path, token string) ([]byte, http.Header, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	req.Header.Set("bdm-api-token", token)
+	req.Header.Set(bdm.ApiTokenHeader, token)
 	req.Header.Set("Accept-Encoding", "gzip")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -380,7 +380,7 @@ func httpGetStatusCode(t *testing.T, path, token string, statusCode int) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "http://127.0.0.1:2323"+path, nil)
 	util.AssertNoError(t, err)
-	req.Header.Set("bdm-api-token", token)
+	req.Header.Set(bdm.ApiTokenHeader, token)
 	resp, err := client.Do(req)
 	util.AssertNoError(t, err)
 	defer resp.Body.Close()
