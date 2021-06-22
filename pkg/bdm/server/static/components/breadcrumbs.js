@@ -49,10 +49,17 @@ export default {
 					Route: '/users/' + route.params.userId + '/tokens'
 				});
 			}
+			if (route.name === 'login') {
+				this.breadcrumbs.push({
+					Name: 'Login',
+					Route: '/login'
+				});
+			}
 		}
 	},
 	template: `
 		<div class="breadcrumbs">
+			<span> / </span>
 			<span v-for="(breadcrumb, index) in breadcrumbs">
 				<span v-if="index !== 0"> / </span>
 				<router-link  v-bind:to="breadcrumb.Route">{{breadcrumb.Name}}</router-link>
