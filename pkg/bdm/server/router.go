@@ -13,8 +13,7 @@ func CreateRouter(packageStore store.Store, limits *bdm.ManifestLimits, users Us
 	router := chi.NewRouter()
 
 	// Static assets for HTML UI
-	staticHandler := createStaticHandler()
-	router.Get("/*", staticHandler)
+	router.Get("/*", createStaticHandler())
 
 	// Download package files as ZIP
 	router.Get("/zip/{name}/{version}", createZipHandler(packageStore, users, tokens))
