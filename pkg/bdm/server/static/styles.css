@@ -5,8 +5,9 @@ th {text-align: left; background-color: #fafafa}
 a {color: #007bff; text-decoration: none}
 a:hover {text-decoration: underline}
 .header {background-color: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 10px; position: relative}
+.logo {width: 35px; height: 35px}
 .error {background-color: #f3d5d5; padding: 10px; border-radius: 4px; margin-bottom: 10px}
-.breadcrumbs {display: inline-block}
-.usermenu {display: inline-block; position: absolute; right: 10px}
+.breadcrumbs {display: inline-block; position: absolute; left: 55px; top: 20px}
+.usermenu {display: inline-block; position: absolute; right: 10px; top: 20px}
 .usermenu button {margin-left: 10px}
 .guest {color: #999}
