@@ -9,3 +9,6 @@
 /test/store
 /test/out
 /test/cache
+/test/tokens.json
+/test/users.json
+/__debug_bin

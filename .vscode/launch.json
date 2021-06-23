@@ -35,7 +35,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-guestreading", "-guestwriting", "-store=test/store"]
+            "args": ["-server", "-guestreading", "-guestwriting", "-tokensfile=test/tokens.json", "-usersfile=test/users.json", "-store=test/store"]
         },
         {
             "name": "Server HTTPS",
@@ -44,7 +44,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
-            "args": ["-server", "-guestreading", "-guestwriting", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
+            "args": ["-server", "-guestreading", "-guestwriting", "-tokensfile=test/tokens.json", "-usersfile=test/users.json", "-store=test/store", "-httpscert=test/dummycert.pem", "-httpskey=test/dummykey.pem"]
         },
         {
             "name": "Validate",
