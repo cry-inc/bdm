@@ -87,27 +87,37 @@ export default {
 			<div class="alert alert-warning" role="alert" v-if="users.length === 0">
 				No users found!
 			</div>
-			<table v-if="users.length > 0">
-				<tr>
-					<th>User</th>
-					<th>Reader</th>
-					<th>Writer</th>
-					<th>Admin</th>
-					<th>&nbsp;</th>
-				</tr>
-				<tr v-for="user in sortedUsers">
-					<td>
-						<router-link v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
-					</td>
-					<td><input type="checkbox" @click="changeRole(user, 'Reader')" v-model="user.Reader"></td>
-					<td><input type="checkbox" @click="changeRole(user, 'Writer')" v-model="user.Writer"></td>
-					<td><input type="checkbox" @click="changeRole(user, 'Admin')" v-model="user.Admin"></td>
-					<td><button @click="deleteUser(user)">Delete</button></td>
-				</tr>
+			<table class="table table-sm table-striped" v-if="users.length > 0">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Reader</th>
+						<th>Writer</th>
+						<th>Admin</th>
+						<th>&nbsp;</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="user in sortedUsers">
+						<td>
+							<router-link v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
+						</td>
+						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Reader')" v-model="user.Reader"></td>
+						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Writer')" v-model="user.Writer"></td>
+						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Admin')" v-model="user.Admin"></td>
+						<td><button class="btn btn-sm btn-danger" @click="deleteUser(user)">Delete</button></td>
+					</tr>
+				</tbody>
 			</table>
 			<h2>Create New User</h2>
-			User Id: <input v-model="newUserId" placeholder="User ID"/><br>
-			Password: <input v-model="newUserPassword" type="password"><br>
-			<button @click="createUser">Create User</button>
+			<div class="mb-3">
+				<label for="userId" class="form-label">User ID</label>
+				<input type="text" v-model="newUserId" class="form-control" id="userId" placeholder="User ID">
+			</div>
+			<div class="mb-3">
+				<label for="newPw" class="form-label">Initial Password (at least 8 characters)</label>
+				<input type="password" v-model="newUserPassword" class="form-control" id="newPw" placeholder="Initial Password">
+			</div>
+			<button class="btn btn-primary" @click="createUser">Create User</button>
 		</div>`
 }

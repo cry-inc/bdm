@@ -60,15 +60,15 @@ export default {
 						</tr>
 						<tr>
 							<th>Reader</th>
-							<td>{{user.Reader ? 'yes' : 'no'}}</td>
+							<td>{{user.Reader ? 'Yes' : 'No'}}</td>
 						</tr>
 						<tr>
 							<th>Writer</th>
-							<td>{{user.Writer ? 'yes' : 'no'}}</td>
+							<td>{{user.Writer ? 'Yes' : 'No'}}</td>
 						</tr>
 						<tr>
 							<th>Admin</th>
-							<td>{{user.Admin ? 'yes' : 'no'}}</td>
+							<td>{{user.Admin ? 'Yes' : 'No'}}</td>
 						</tr>
 					</tbody>
 				</table>
