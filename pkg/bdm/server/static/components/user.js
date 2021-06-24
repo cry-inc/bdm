@@ -52,18 +52,42 @@ export default {
 				The user {{userId}} does not exist!
 			</div>
 			<div v-if="loaded && user">
-				ID: {{user.Id}}<br>
-				Reader: {{user.Reader ? 'yes' : 'no'}}<br>
-				Writer: {{user.Writer ? 'yes' : 'no'}}<br>
-				Admin: {{user.Admin ? 'yes' : 'no'}}<br>
+				<table class="table table-sm">
+					<tbody>	
+						<tr>
+							<th style="width: 20%">User ID</th>
+							<td style="width: 80%">{{user.Id}}</td>
+						</tr>
+						<tr>
+							<th>Reader</th>
+							<td>{{user.Reader ? 'yes' : 'no'}}</td>
+						</tr>
+						<tr>
+							<th>Writer</th>
+							<td>{{user.Writer ? 'yes' : 'no'}}</td>
+						</tr>
+						<tr>
+							<th>Admin</th>
+							<td>{{user.Admin ? 'yes' : 'no'}}</td>
+						</tr>
+					</tbody>
+				</table>
 				<p><router-link v-bind:to="'/users/' + user.Id + '/tokens'">Manage Tokens</router-link></p>
-				<h2>Change Password</h2>
-				<span v-if="!login || !login.Admin || login.Id === user.Id">
-					Old Password: <input v-model="oldPassword" type="password" placeholder="Old Password"/><br>
-				</span>
-				New Password: <input v-model="newPassword1" type="password" placeholder="New Password"/> (at least 8 characters)<br>
-				Repeat New Password: <input v-model="newPassword2" type="password" placeholder="New Password"/><br>
-				<button @click="changePassword">Change Password</button>
+				
+				<h2 class="mt-4">Change Password</h2>
+				<div class="mb-3" v-if="!login || !login.Admin || login.Id === user.Id">
+					<label for="oldPw" class="form-label">Old Password</label>
+					<input type="password" v-model="oldPassword" class="form-control" id="oldPw" placeholder="Old Password">
+				</div>
+				<div class="mb-3">
+					<label for="newPw1" class="form-label">New Password (at least 8 characters)</label>
+					<input type="password" v-model="newPassword1" class="form-control" id="newPw1" placeholder="New Password">
+				</div>
+				<div class="mb-3">
+					<label for="newPw2" class="form-label">Repeat New Password</label>
+					<input type="password" v-model="newPassword2" class="form-control" id="newPw2" placeholder="New Password">
+				</div>
+				<button class="btn btn-primary" @click="changePassword">Change Password</button>
 			</div>
 		</div>`
 }
