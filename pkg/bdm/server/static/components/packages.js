@@ -13,7 +13,7 @@ export default {
 	template: `
 		<div v-if="loaded">
 			<h1>Packages</h1>
-			<div class="error" v-if="packages.length === 0">
+			<div class="alert alert-warning" role="alert" v-if="packages.length === 0">
 				No packages found!
 			</div>
 			<ul>

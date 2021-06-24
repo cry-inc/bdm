@@ -84,7 +84,7 @@ export default {
 	template: `
 		<div v-if="loaded">
 			<h1>Users</h1>
-			<div class="error" v-if="users.length === 0">
+			<div class="alert alert-warning" role="alert" v-if="users.length === 0">
 				No users found!
 			</div>
 			<table v-if="users.length > 0">

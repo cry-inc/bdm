@@ -4,18 +4,29 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width">
 		<title>BDM</title>
-		<link rel="stylesheet" href="styles.css">
+		<link rel="stylesheet" href="external/bootstrap.min-5.0.2.css">
 		<link rel="icon" href="favicon.ico">
 		<script src="external/vue.global.prod-3.0.11.js"></script>
 		<script src="external/vue-router.global.prod-4.0.8.js"></script>
 		<script src="app.js" type="module"></script>
 	</head>
 	<body id="bdm">
-		<div class="header">
-			<router-link to="/"><img class="logo" src="bdm.svg" /></router-link>
-			<breadcrumbs></breadcrumbs>
-			<user-menu></user-menu>
+		<div class="container">
+			<nav class="navbar navbar-expand-lg navbar-light bg-light mt-3 mb-3">
+				<div class="container-fluid">
+					<router-link to="/" class="navbar-brand">
+						<img src="bdm.svg" alt="BDM" width="32" height="24" class="d-inline-block align-text-top">
+						BDM
+					</router-link>
+					<div class="navbar-collapse">
+						<div class="navbar-nav me-auto">
+							<breadcrumbs></breadcrumbs>
+						</div>
+						<user-menu></user-menu>
+					</div>
+				</div>
+			</nav>
+			<router-view></router-view>
 		</div>
-		<router-view></router-view>
 	</body>
 </html>

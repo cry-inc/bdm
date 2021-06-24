@@ -53,7 +53,7 @@ export default {
 	template: `
 		<div v-if="loaded">
 			<h1>Tokens</h1>
-			<div class="error" v-if="tokens.length === 0">
+			<div class="alert alert-warning" role="alert" v-if="tokens.length === 0">
 				No tokens found!
 			</div>
 			<table v-if="tokens.length > 0">

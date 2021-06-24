@@ -48,7 +48,7 @@ export default {
 	template: `
 		<div>
 			<h1>{{userId}}</h1>
-			<div class="error" v-if="loaded && !user">
+			<div class="alert alert-danger" role="alert" v-if="loaded && !user">
 				The user {{userId}} does not exist!
 			</div>
 			<div v-if="loaded && user">

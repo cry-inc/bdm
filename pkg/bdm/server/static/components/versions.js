@@ -14,7 +14,7 @@ export default {
 	template: `
 		<div v-if="loaded">
 			<h1>{{package}} Versions</h1>
-			<div class="error" v-if="versions.length === 0">
+			<div class="alert alert-warning" role="alert" v-if="versions.length === 0">
 				No versions for package {{package}} found!
 			</div>
 			<ul>
