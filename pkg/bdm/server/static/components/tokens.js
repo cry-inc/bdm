@@ -56,26 +56,45 @@ export default {
 			<div class="alert alert-warning" role="alert" v-if="tokens.length === 0">
 				No tokens found!
 			</div>
-			<table v-if="tokens.length > 0">
-				<tr>
-					<th>Token</th>
-					<th>Reader</th>
-					<th>Writer</th>
-					<th>Admin</th>
-					<th>&nbsp;</th>
-				</tr>
-				<tr v-for="token in tokens">
-					<td>{{token.Id}}</td>
-					<td><input disabled="disabled" type="checkbox" v-model="token.Reader"></td>
-					<td><input disabled="disabled" type="checkbox" v-model="token.Writer"></td>
-					<td><input disabled="disabled" type="checkbox" v-model="token.Admin"></td>
-					<td><button @click="deleteToken(token)">Delete</button></td>
-				</tr>
+			<table class="table table-sm table-striped" v-if="tokens.length > 0">
+				<thead>
+					<tr>
+						<th>Token</th>
+						<th>Reader</th>
+						<th>Writer</th>
+						<th>Admin</th>
+						<th>&nbsp;</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="token in tokens">
+						<td>{{token.Id}}</td>
+						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Reader"></td>
+						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Writer"></td>
+						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Admin"></td>
+						<td><button class="btn btn-sm btn-danger" @click="deleteToken(token)">Delete</button></td>
+					</tr>
+				</tbody>
 			</table>
 			<h2>Create Token</h2>
-			Reader: <input type="checkbox" v-model="createTokenReader"/><br>
-			Writer: <input type="checkbox" v-model="createTokenWriter"/><br>
-			Admin: <input type="checkbox" v-model="createTokenAdmin"/><br>
-			<button @click="createToken">Create Token</button>
+			<div class="form-check">
+				<input v-model="createTokenReader" class="form-check-input" type="checkbox" id="reader">
+				<label class="form-check-label" for="reader">
+					Reader
+				</label>
+			</div>
+			<div class="form-check">
+				<input v-model="createTokenWriter" class="form-check-input" type="checkbox" id="writer">
+				<label class="form-check-label" for="writer">
+					Writer
+				</label>
+			</div>
+			<div class="form-check">
+				<input v-model="createTokenAdmin" class="form-check-input" type="checkbox" id="admin">
+				<label class="form-check-label" for="admin">
+					Admin
+				</label>
+			</div>
+			<button class="mt-1 btn btn-primary" @click="createToken">Create Token</button>
 		</div>`
 }
