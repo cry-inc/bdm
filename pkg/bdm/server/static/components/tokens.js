@@ -5,8 +5,7 @@ export default {
 			tokens: [],
 			loaded: false,
 			createTokenReader: true,
-			createTokenWriter: false,
-			createTokenAdmin: false
+			createTokenWriter: false
 		};
 	},
 	async created() {
@@ -32,9 +31,12 @@ export default {
 		async createToken() {
 			const request = {
 				Reader: this.createTokenReader,
-				Writer: this.createTokenWriter,
-				Admin: this.createTokenAdmin
+				Writer: this.createTokenWriter
 			};
+			if (!request.Reader) {
+				alert('Token must have reading permission, only writing is optional!');
+				return;
+			}
 			const response = await fetch('/users/' + this.userId + '/tokens', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
@@ -45,7 +47,6 @@ export default {
 			} else {
 				this.createTokenReader = true;
 				this.createTokenWriter = false;
-				this.createTokenAdmin = false;
 			}
 			await this.query();
 		}
@@ -62,7 +63,6 @@ export default {
 						<th>Token</th>
 						<th>Reader</th>
 						<th>Writer</th>
-						<th>Admin</th>
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
@@ -71,12 +71,11 @@ export default {
 						<td>{{token.Id}}</td>
 						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Reader"></td>
 						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Writer"></td>
-						<td><input class="form-check-input" disabled="disabled" type="checkbox" v-model="token.Admin"></td>
 						<td><button class="btn btn-sm btn-danger" @click="deleteToken(token)">Delete</button></td>
 					</tr>
 				</tbody>
 			</table>
-			<h2>Create Token</h2>
+			<h2 class="mt-4">Create New Token</h2>
 			<div class="form-check">
 				<input v-model="createTokenReader" class="form-check-input" type="checkbox" id="reader">
 				<label class="form-check-label" for="reader">
@@ -87,12 +86,6 @@ export default {
 				<input v-model="createTokenWriter" class="form-check-input" type="checkbox" id="writer">
 				<label class="form-check-label" for="writer">
 					Writer
-				</label>
-			</div>
-			<div class="form-check">
-				<input v-model="createTokenAdmin" class="form-check-input" type="checkbox" id="admin">
-				<label class="form-check-label" for="admin">
-					Admin
 				</label>
 			</div>
 			<button class="mt-1 btn btn-primary" @click="createToken">Create Token</button>
