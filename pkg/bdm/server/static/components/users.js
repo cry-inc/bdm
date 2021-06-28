@@ -2,6 +2,7 @@ export default {
 	data() {
 		return {
 			users: [],
+			currentUser: {},
 			loaded: false,
 			newUserId: '',
 			newUserPassword: ''
@@ -12,8 +13,10 @@ export default {
 	},
 	methods: {
 		async query() {
-			const response = await fetch('users');
-			this.users = response.ok ? await response.json() : [];
+			const usersResponse = await fetch('users');
+			this.users = usersResponse.ok ? await usersResponse.json() : [];
+			const currentUserResponse = await fetch('login');
+			this.currentUser = currentUserResponse.ok ? await currentUserResponse.json() : {};
 			this.loaded = true;
 		},
 		async deleteUser(user) {
@@ -102,10 +105,10 @@ export default {
 						<td>
 							<router-link v-bind:to="'/users/' + user.Id">{{user.Id}}</router-link>
 						</td>
-						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Reader')" v-model="user.Reader"></td>
-						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Writer')" v-model="user.Writer"></td>
-						<td><input class="form-check-input" type="checkbox" @click="changeRole(user, 'Admin')" v-model="user.Admin"></td>
-						<td><button class="btn btn-sm btn-danger" @click="deleteUser(user)">Delete</button></td>
+						<td><input v-bind:disabled="currentUser.Id === user.Id" class="form-check-input" type="checkbox" @click="changeRole(user, 'Reader')" v-model="user.Reader"></td>
+						<td><input v-bind:disabled="currentUser.Id === user.Id" class="form-check-input" type="checkbox" @click="changeRole(user, 'Writer')" v-model="user.Writer"></td>
+						<td><input v-bind:disabled="currentUser.Id === user.Id" class="form-check-input" type="checkbox" @click="changeRole(user, 'Admin')" v-model="user.Admin"></td>
+						<td><button class="btn btn-sm btn-danger" v-bind:disabled="currentUser.Id === user.Id" @click="deleteUser(user)">Delete</button></td>
 					</tr>
 				</tbody>
 			</table>
