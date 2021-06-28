@@ -20,15 +20,9 @@ export default {
 	},
 	template: `
 		<div>
-			<router-link v-if="user" v-bind:to="'/users/' + user.Id">
-				My Profile
-			</router-link>
-			<span v-if="user && user.Admin">
-				| <router-link to="/users">Manage Users</router-link>
-			</span>
-			<button class="ms-2 btn btn-sm btn-secondary" v-if="user" @click="logout">
-				Logout
-			</button>
+			<router-link v-if="user" v-bind:to="'/users/' + user.Id">My Profile</router-link>
+			<span v-if="user && user.Admin"> | <router-link to="/users">Manage Users</router-link></span>
+			<button class="ms-2 btn btn-sm btn-secondary" v-if="user" @click="logout">Logout</button>
 			<router-link v-if="!user" class="btn btn-sm btn-secondary" to="/login">Login</router-link>
 		</div>`
 }
