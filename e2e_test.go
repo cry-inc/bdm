@@ -283,13 +283,15 @@ func startTestingServer(t *testing.T) (*http.Server, chan bool) {
 	}, "mypassword")
 	util.AssertNoError(t, err)
 
-	rt, err := tokens.CreateToken("admin", &server.Roles{Reader: true})
-	util.AssertNoError(t, err)
-	readToken = rt.Id
+	expiration := time.Now().Add(time.Hour)
 
-	wt, err := tokens.CreateToken("admin", &server.Roles{Writer: true, Reader: true})
+	rt, err := tokens.CreateToken("admin", "Reader", expiration, &server.Roles{Reader: true})
 	util.AssertNoError(t, err)
-	writeToken = wt.Id
+	readToken = rt.Secret
+
+	wt, err := tokens.CreateToken("admin", "Writer", expiration, &server.Roles{Writer: true, Reader: true})
+	util.AssertNoError(t, err)
+	writeToken = wt.Secret
 
 	server := &http.Server{Addr: "127.0.0.1:2323", Handler: handler}
 	stopped := make(chan bool)

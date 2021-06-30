@@ -59,21 +59,20 @@ export default {
 							<td style="width: 80%">{{user.Id}}</td>
 						</tr>
 						<tr>
-							<th>Reader</th>
+							<th>Read Permission</th>
 							<td>{{user.Reader ? 'Yes' : 'No'}}</td>
 						</tr>
 						<tr>
-							<th>Writer</th>
+							<th>Write Permission</th>
 							<td>{{user.Writer ? 'Yes' : 'No'}}</td>
 						</tr>
 						<tr>
-							<th>Admin</th>
+							<th>Admin Permission</th>
 							<td>{{user.Admin ? 'Yes' : 'No'}}</td>
 						</tr>
 					</tbody>
 				</table>
 				<p><router-link v-bind:to="'/users/' + user.Id + '/tokens'">Manage Tokens</router-link></p>
-				
 				<h2 class="mt-4">Change Password</h2>
 				<div class="mb-3" v-if="!login || !login.Admin || login.Id === user.Id">
 					<label for="oldPw" class="form-label">Old Password</label>

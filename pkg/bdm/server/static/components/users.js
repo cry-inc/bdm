@@ -112,7 +112,7 @@ export default {
 					</tr>
 				</tbody>
 			</table>
-			<h2>Create New User</h2>
+			<h2 class="mt-4">Create New User</h2>
 			<div class="mb-3">
 				<label for="userId" class="form-label">User ID</label>
 				<input type="text" v-model="newUserId" class="form-control" id="userId" placeholder="User ID">

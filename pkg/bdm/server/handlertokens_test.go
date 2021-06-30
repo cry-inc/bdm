@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
@@ -39,7 +40,8 @@ func TestTokensGetHandler(t *testing.T) {
 	util.AssertEqualString(t, "[]", string(response.data))
 
 	// Create a test admin token
-	createdToken, err := tokens.CreateToken("admin", &Roles{Admin: true, Writer: true, Reader: true})
+	expiration := time.Now().Add(time.Hour)
+	createdToken, err := tokens.CreateToken("admin", "token name", expiration, &Roles{Admin: true, Writer: true, Reader: true})
 	util.AssertNoError(t, err)
 
 	// Now we should get one token
@@ -53,7 +55,10 @@ func TestTokensGetHandler(t *testing.T) {
 	util.AssertNoError(t, err)
 	util.Assert(t, len(readTokens) == 1)
 	util.Assert(t, createdToken.Id == readTokens[0].Id)
+	util.Assert(t, createdToken.Name == readTokens[0].Name)
 	util.Assert(t, readTokens[0].Admin && readTokens[0].Writer && readTokens[0].Reader)
+	util.Assert(t, createdToken.Secret != "")
+	util.Assert(t, readTokens[0].Secret == "")
 }
 
 func TestTokensPostDeleteHandler(t *testing.T) {
@@ -67,7 +72,7 @@ func TestTokensPostDeleteHandler(t *testing.T) {
 
 	// Create admin token for admin user with admin role
 	authUser := "admin"
-	body := `{"Admin": true}`
+	body := `{"Name": "token name", "Expiration": "2199-01-01T01:01:01Z", "Admin": true}`
 	request := createMockedRequest("POST", "/users/admin/tokens", &body, &authUser)
 	response := createMockedResponse()
 	router.ServeHTTP(response, request)
@@ -76,6 +81,8 @@ func TestTokensPostDeleteHandler(t *testing.T) {
 	err = json.Unmarshal(response.data, &createdToken)
 	util.AssertNoError(t, err)
 	util.Assert(t, createdToken.Admin && !createdToken.Writer && !createdToken.Reader)
+	util.Assert(t, createdToken.Name == "token name")
+	util.Assert(t, len(createdToken.Secret) > 0)
 
 	// Token database should now contain one token
 	tokenList, err := tokens.GetTokens("admin")

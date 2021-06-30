@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"sync"
+	"time"
 
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
@@ -16,12 +17,13 @@ type jsonToken struct {
 }
 
 type jsonTokens struct {
-	tokensFile    string
-	guestDownload bool
-	guestUpload   bool
-	tokens        map[string]jsonToken
-	mutex         sync.Mutex
-	users         Users
+	tokensFile     string
+	guestDownload  bool
+	guestUpload    bool
+	tokensBySecret map[string]jsonToken
+	tokensById     map[string]jsonToken
+	mutex          sync.Mutex
+	users          Users
 }
 
 func CreateJsonTokens(tokensFile string, users Users, guestDownload, guestUpload bool) (Tokens, error) {
@@ -30,11 +32,12 @@ func CreateJsonTokens(tokensFile string, users Users, guestDownload, guestUpload
 	}
 
 	tokens := jsonTokens{
-		tokensFile:    tokensFile,
-		guestDownload: guestDownload,
-		guestUpload:   guestUpload,
-		tokens:        make(map[string]jsonToken),
-		users:         users,
+		tokensFile:     tokensFile,
+		guestDownload:  guestDownload,
+		guestUpload:    guestUpload,
+		tokensBySecret: make(map[string]jsonToken),
+		tokensById:     make(map[string]jsonToken),
+		users:          users,
 	}
 
 	if !util.FileExists(tokens.tokensFile) {
@@ -64,9 +67,11 @@ func (tokens *jsonTokens) loadTokens() error {
 		return fmt.Errorf("error while unmarshalling token database: %w", err)
 	}
 
-	tokens.tokens = make(map[string]jsonToken)
+	tokens.tokensById = make(map[string]jsonToken)
+	tokens.tokensBySecret = make(map[string]jsonToken)
 	for _, t := range tokenList {
-		tokens.tokens[t.Id] = t
+		tokens.tokensById[t.Id] = t
+		tokens.tokensBySecret[t.Secret] = t
 	}
 
 	return nil
@@ -74,7 +79,7 @@ func (tokens *jsonTokens) loadTokens() error {
 
 func (tokens *jsonTokens) saveTokens() error {
 	tokenList := make([]jsonToken, 0)
-	for _, t := range tokens.tokens {
+	for _, t := range tokens.tokensById {
 		tokenList = append(tokenList, t)
 	}
 
@@ -105,7 +110,7 @@ func (tokens *jsonTokens) GetTokens(userId string) ([]Token, error) {
 	defer tokens.mutex.Unlock()
 
 	tokenList := make([]Token, 0)
-	for _, t := range tokens.tokens {
+	for _, t := range tokens.tokensById {
 		if t.UserId == userId {
 			tokenList = append(tokenList, t.Token)
 		}
@@ -114,24 +119,33 @@ func (tokens *jsonTokens) GetTokens(userId string) ([]Token, error) {
 	return tokenList, nil
 }
 
-func (tokens *jsonTokens) CreateToken(userId string, roles *Roles) (*Token, error) {
+func (tokens *jsonTokens) CreateToken(userId, name string, expiration time.Time, roles *Roles) (*Token, error) {
 	tokens.mutex.Lock()
 	defer tokens.mutex.Unlock()
 
 	tokenId := util.GenerateAPIToken()
-	if _, found := tokens.tokens[tokenId]; found {
-		return nil, fmt.Errorf("collision while generating new token %s", tokenId)
+	if _, found := tokens.tokensById[tokenId]; found {
+		return nil, fmt.Errorf("collision while generating new token ID %s", tokenId)
+	}
+
+	tokenSecret := util.GenerateAPIToken()
+	if _, found := tokens.tokensBySecret[tokenSecret]; found {
+		return nil, fmt.Errorf("collision while generating new token secret %s", tokenSecret)
 	}
 
 	token := jsonToken{
 		UserId: userId,
 		Token: Token{
-			Id:    tokenId,
-			Roles: *roles,
+			Id:         tokenId,
+			Name:       name,
+			Secret:     tokenSecret,
+			Expiration: expiration,
+			Roles:      *roles,
 		},
 	}
 
-	tokens.tokens[tokenId] = token
+	tokens.tokensById[tokenId] = token
+	tokens.tokensBySecret[tokenSecret] = token
 	err := tokens.saveTokens()
 	if err != nil {
 		return nil, fmt.Errorf("unable to save JSON token database: %w", err)
@@ -146,11 +160,14 @@ func (tokens *jsonTokens) DeleteToken(tokenId string) error {
 	tokens.mutex.Lock()
 	defer tokens.mutex.Unlock()
 
-	if _, found := tokens.tokens[tokenId]; !found {
-		return fmt.Errorf("token %s does not exist in database", tokenId)
+	if _, found := tokens.tokensById[tokenId]; !found {
+		return fmt.Errorf("token with ID %s does not exist in database", tokenId)
 	}
 
-	delete(tokens.tokens, tokenId)
+	tobeDeleted := tokens.tokensById[tokenId]
+	delete(tokens.tokensById, tobeDeleted.Id)
+	delete(tokens.tokensBySecret, tobeDeleted.Secret)
+
 	err := tokens.saveTokens()
 	if err != nil {
 		return fmt.Errorf("unable to save JSON token database: %w", err)
@@ -163,14 +180,19 @@ const ReaderRole = "READER"
 const WriterRole = "WRITER"
 const AdminRole = "ADMIN"
 
-func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
+func (tokens *jsonTokens) checkToken(secret, role string) bool {
 	tokens.mutex.Lock()
 	defer tokens.mutex.Unlock()
 
-	if _, found := tokens.tokens[tokenId]; !found {
+	if _, found := tokens.tokensBySecret[secret]; !found {
 		return false
 	}
-	token := tokens.tokens[tokenId]
+	token := tokens.tokensBySecret[secret]
+
+	// Check expiration
+	if token.Expiration.Before(time.Now()) {
+		return false
+	}
 
 	// Check token roles
 	if role == ReaderRole && !token.Roles.Reader {
@@ -202,20 +224,20 @@ func (tokens *jsonTokens) checkToken(tokenId, role string) bool {
 	return true
 }
 
-func (tokens *jsonTokens) CanRead(tokenId string) bool {
+func (tokens *jsonTokens) CanRead(secret string) bool {
 	if tokens.guestDownload {
 		return true
 	}
-	return tokens.checkToken(tokenId, ReaderRole)
+	return tokens.checkToken(secret, ReaderRole)
 }
 
-func (tokens *jsonTokens) CanWrite(tokenId string) bool {
+func (tokens *jsonTokens) CanWrite(secret string) bool {
 	if tokens.guestUpload {
 		return true
 	}
-	return tokens.checkToken(tokenId, WriterRole)
+	return tokens.checkToken(secret, WriterRole)
 }
 
-func (tokens *jsonTokens) IsAdmin(tokenId string) bool {
-	return tokens.checkToken(tokenId, AdminRole)
+func (tokens *jsonTokens) IsAdmin(secret string) bool {
+	return tokens.checkToken(secret, AdminRole)
 }
