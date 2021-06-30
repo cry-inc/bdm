@@ -58,10 +58,23 @@ type createTokenRequest struct {
 
 func createTokensPostHandler(users Users, tokens Tokens) http.HandlerFunc {
 	return enforceSmallBodySize(enforceAdminOrMatchUser(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
+		tokenList, err := tokens.GetTokens(paramUser.Id)
+		if err != nil {
+			log.Print(fmt.Errorf("error reading existing user tokens: %w", err))
+			http.Error(writer, "Failed to list existing user tokens", http.StatusInternalServerError)
+			return
+		}
+
+		const maxUserTokens = 10
+		if len(tokenList) >= maxUserTokens {
+			http.Error(writer, "Exceeded limit of tokens per user", http.StatusBadRequest)
+			return
+		}
+
 		jsonData, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Print(fmt.Errorf("error reading create token request: %w", err))
-			http.Error(writer, "Failed read create token request", http.StatusBadRequest)
+			http.Error(writer, "Failed to read create token request", http.StatusBadRequest)
 			return
 		}
 
