@@ -8,7 +8,7 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-// 10 MB should be enough for the objects JSON data!
+// A JsonSizeLimit of 10 MB should be enough for the objects JSON data!
 const JsonSizeLimit = 10 * 1024 * 1024
 
 // ReadObjectsFromStream reads a list of Objects from a stream

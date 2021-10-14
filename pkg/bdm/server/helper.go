@@ -69,14 +69,14 @@ func getCurrentUser(request *http.Request, users Users) (*User, error) {
 	return user, nil
 }
 
-type UserHandlerFunc func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User)
+type userHandlerFunc func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User)
 
 // Wrapper for http.HandlerFunc that enforces and looks up a logged in user.
 // Additionally it also extracts the user ID from the URL paramater.
 // The authenticated users is required or leads to an error.
 // The URL parameter user is optional and can be nil for routes without the parameter.
 // Both users are handed over as *User arguments.
-func extractUsers(users Users, handler UserHandlerFunc) http.HandlerFunc {
+func extractUsers(users Users, handler userHandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
 		authUser, err := getCurrentUser(req, users)
 		if err != nil {
@@ -99,7 +99,7 @@ func extractUsers(users Users, handler UserHandlerFunc) http.HandlerFunc {
 }
 
 // Wrapper around extractUsers that enforces that the authenticated user is an admin
-func enforceAdminUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
+func enforceAdminUser(users Users, handler userHandlerFunc) http.HandlerFunc {
 	return extractUsers(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		if !authUser.Admin {
 			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)
@@ -112,7 +112,7 @@ func enforceAdminUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
 
 // Wrapper around extractUsers that enforces that the authenticated user is an admin OR
 // the autheticated user matches the user from the URL parameters.
-func enforceAdminOrMatchUser(users Users, handler UserHandlerFunc) http.HandlerFunc {
+func enforceAdminOrMatchUser(users Users, handler userHandlerFunc) http.HandlerFunc {
 	return extractUsers(users, func(writer http.ResponseWriter, req *http.Request, authUser *User, paramUser *User) {
 		if paramUser != nil && authUser.Id != paramUser.Id && !authUser.Admin {
 			http.Error(writer, "Admin permissions required", http.StatusUnauthorized)

@@ -16,11 +16,12 @@ const developmentMode = false
 func createStaticHandler() http.HandlerFunc {
 	if developmentMode {
 		return http.FileServer(http.Dir("pkg/bdm/server/static")).ServeHTTP
-	} else {
-		embeddedFileSystem, err := fs.Sub(staticFs, "static")
-		if err != nil {
-			panic(err)
-		}
-		return http.FileServer(http.FS(embeddedFileSystem)).ServeHTTP
 	}
+
+	embeddedFileSystem, err := fs.Sub(staticFs, "static")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FileServer(http.FS(embeddedFileSystem)).ServeHTTP
 }
