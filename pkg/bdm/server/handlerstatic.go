@@ -14,15 +14,13 @@ var staticFs embed.FS
 const developmentMode = false
 
 func createStaticHandler() http.HandlerFunc {
-	var fileSystem http.FileSystem = nil
 	if developmentMode {
-		fileSystem = http.Dir("pkg/bdm/server/static")
+		return http.FileServer(http.Dir("pkg/bdm/server/static")).ServeHTTP
 	} else {
 		embeddedFileSystem, err := fs.Sub(staticFs, "static")
 		if err != nil {
 			panic(err)
 		}
-		fileSystem = http.FS(embeddedFileSystem)
+		return http.FileServer(http.FS(embeddedFileSystem)).ServeHTTP
 	}
-	return http.FileServer(fileSystem).ServeHTTP
 }

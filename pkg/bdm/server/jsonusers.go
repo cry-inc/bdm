@@ -27,6 +27,8 @@ type jsonUsers struct {
 	mutex     sync.Mutex
 }
 
+// CreateJsonUsers returns a implementation of the Users interface
+// that uses a simple JSON file as storage for the user database.
 func CreateJsonUsers(usersFile string) (Users, error) {
 	users := jsonUsers{
 		usersFile: usersFile,

@@ -1,10 +1,12 @@
 package server
 
+// User describes a server user
 type User struct {
 	Id string
 	Roles
 }
 
+// The Users interface is used by the server as abstraction for user management
 type Users interface {
 	GetUsers() ([]string, error)
 

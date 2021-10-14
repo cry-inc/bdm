@@ -2,6 +2,7 @@ package server
 
 import "time"
 
+// Token describes a server token
 type Token struct {
 	Id         string
 	Name       string
@@ -10,6 +11,7 @@ type Token struct {
 	Roles
 }
 
+// The Tokens interface is used by the server as abstraction for token handling
 type Tokens interface {
 	CanRead(secret string) bool
 	CanWrite(secret string) bool

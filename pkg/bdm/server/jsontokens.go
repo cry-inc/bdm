@@ -26,6 +26,8 @@ type jsonTokens struct {
 	users          Users
 }
 
+// CreateJsonTokens returns a implementation of the Tokens interface
+// that uses a simple JSON file as storage for the token database.
 func CreateJsonTokens(tokensFile string, users Users, guestDownload, guestUpload bool) (Tokens, error) {
 	if guestUpload && !guestDownload {
 		return nil, fmt.Errorf("guest uploading without guest downloading is not supported")
@@ -176,9 +178,9 @@ func (tokens *jsonTokens) DeleteToken(tokenId string) error {
 	return nil
 }
 
-const ReaderRole = "READER"
-const WriterRole = "WRITER"
-const AdminRole = "ADMIN"
+const readerRole = "READER"
+const writerRole = "WRITER"
+const adminRole = "ADMIN"
 
 func (tokens *jsonTokens) checkToken(secret, role string) bool {
 	tokens.mutex.Lock()
@@ -195,13 +197,13 @@ func (tokens *jsonTokens) checkToken(secret, role string) bool {
 	}
 
 	// Check token roles
-	if role == ReaderRole && !token.Roles.Reader {
+	if role == readerRole && !token.Roles.Reader {
 		return false
 	}
-	if role == WriterRole && !token.Roles.Writer {
+	if role == writerRole && !token.Roles.Writer {
 		return false
 	}
-	if role == AdminRole && !token.Roles.Admin {
+	if role == adminRole && !token.Roles.Admin {
 		return false
 	}
 
@@ -211,13 +213,13 @@ func (tokens *jsonTokens) checkToken(secret, role string) bool {
 	}
 
 	// Check user roles
-	if role == ReaderRole && !user.Roles.Reader {
+	if role == readerRole && !user.Roles.Reader {
 		return false
 	}
-	if role == WriterRole && !user.Roles.Writer {
+	if role == writerRole && !user.Roles.Writer {
 		return false
 	}
-	if role == AdminRole && !user.Roles.Admin {
+	if role == adminRole && !user.Roles.Admin {
 		return false
 	}
 
@@ -228,16 +230,16 @@ func (tokens *jsonTokens) CanRead(secret string) bool {
 	if tokens.guestDownload {
 		return true
 	}
-	return tokens.checkToken(secret, ReaderRole)
+	return tokens.checkToken(secret, readerRole)
 }
 
 func (tokens *jsonTokens) CanWrite(secret string) bool {
 	if tokens.guestUpload {
 		return true
 	}
-	return tokens.checkToken(secret, WriterRole)
+	return tokens.checkToken(secret, writerRole)
 }
 
 func (tokens *jsonTokens) IsAdmin(secret string) bool {
-	return tokens.checkToken(secret, AdminRole)
+	return tokens.checkToken(secret, adminRole)
 }
