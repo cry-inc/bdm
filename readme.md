@@ -54,11 +54,11 @@ To avoid all accounts and permissions, you can use the arguments `-guestreading`
 
 When starting the server for the first time, BDM will create an default admin account with a random password. This default admin is only created if the user database is empty. You can customize the name of the default admin account using the argument `-defaultuser youradminname`. The random password will be printed only once during startup to the console. You can use the password to log into the web interface and create more users and tokens.
 
-A token is a kind of special long password that can be used without a user name. You need them to upload and download packages with the client if guest access is not enabled. Each token can have specific permissions and belongs to a user. If the user no longer exists, the token will stop working. If a user no longer has the permissions required by the token, it will also stop working. Tokens can be created and deleted in your profile in to the web interface.
+A token is a kind of special long password that can be used without a user name. You need them to upload and download packages with the client if guest access is not enabled. Each token can have specific permissions and belongs to a user. If the user no longer exists, the token will stop working. If a user no longer has the permissions required by the token, it will also stop working. Tokens can be created and deleted in your profile using the web interface.
 
 ## Why another package server/client?
 
-There are already lots of existing systems for packages and binary artifact management. All of them have different pros and cons and are often intended for very different purposes. Systems like NuGet and NPM are designed around managing libraries for application development. Other systems, like Microsofts Universal Packages and the Generic Artifactory packages, require expensive software licenses or are only implemented by paid cloud services.
+There are already lots of existing systems for packages and binary artifact management. All of them have different pros and cons and are often intended for very different purposes. Systems like NuGet and NPM are designed around managing libraries for application development. DVC is tailored to Machine Learning and use with git. Other systems, like Microsofts Universal Packages and the Generic Artifactory packages, require expensive software licenses or are only implemented by paid cloud services.
 
 At my work we were looking for a system that could reliably manage large and small binary test assets for automated and manual software tests. We already tried and used a lot of different approaches over the years. SVN and GIT repos (with and without LFS), network file shares, OneDrive/Box.com, NuGet and more. All of them failed us eventually for different reasons.
 
@@ -69,7 +69,7 @@ The specific requirements that I was trying to satisfy were:
 * File deduplication and compression to minimize storage and bandwidth costs
 * Intelligent package restore (omits downloading and restoring existing files)
 * Local caching for slow or expensive internet connections
-* Easy way of backupping the server data
+* Easy backup of all package repository data on the server
 * Simple API or client library for integration in custom applications and scripts
 * Downloading of packages and files using a persistent URL via browser without the need for a client application
 * Robust verification of all package data
