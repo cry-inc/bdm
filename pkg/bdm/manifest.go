@@ -35,13 +35,13 @@ type Manifest struct {
 // GenerateManifest creates an unpublished manifest for an input folder using the given name
 func GenerateManifest(packageName, inputFolder string) (*Manifest, error) {
 	files := make([]File, 0)
-	err := filepath.Walk(inputFolder, func(filePath string, fileInfo os.FileInfo, err error) error {
+	err := filepath.WalkDir(inputFolder, func(filePath string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("error getting file info: %w", err)
 		}
 
-		fileMode := fileInfo.Mode()
-		if !fileMode.IsDir() && fileMode.IsRegular() {
+		fileType := entry.Type()
+		if !entry.IsDir() && fileType.IsRegular() {
 			absInput, err := filepath.Abs(inputFolder)
 			if err != nil {
 				return fmt.Errorf("error getting absolute input path for %s: %w",
@@ -66,10 +66,16 @@ func GenerateManifest(packageName, inputFolder string) (*Manifest, error) {
 				return fmt.Errorf("error hashing file %s: %w", filePath, err)
 			}
 
+			info, err := entry.Info()
+			if err != nil {
+				return fmt.Errorf("error getting file info for %s: %w",
+					filePath, err)
+			}
+
 			packageFile := File{
 				Path: packageFilePath,
 				Object: Object{
-					Size: fileInfo.Size(),
+					Size: info.Size(),
 					Hash: hash,
 				},
 			}
