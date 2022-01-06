@@ -33,7 +33,7 @@ func streamObjectsToStore(input io.Reader, store store.Store, maxObjectSize int6
 			defer writer.Close()
 			copied, err := io.CopyN(writer, decompressedInput, object.Size)
 			if err != nil {
-				panic(err)
+				panic(fmt.Errorf("failed to copy decompressed input data: %w", err))
 			}
 			if copied != object.Size {
 				panic(fmt.Errorf("object size mismatch: expected %d but copied %d bytes", object.Size, copied))

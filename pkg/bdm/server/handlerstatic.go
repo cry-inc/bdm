@@ -2,6 +2,7 @@ package server
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func createStaticHandler() http.HandlerFunc {
 
 	embeddedFileSystem, err := fs.Sub(staticFs, "static")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to create sub-filesystem: %w", err))
 	}
 
 	return http.FileServer(http.FS(embeddedFileSystem)).ServeHTTP

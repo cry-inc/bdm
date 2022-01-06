@@ -3,7 +3,6 @@ package store
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -139,8 +138,7 @@ func (s *packageStore) ReadObject(hash string) (io.ReadCloser, error) {
 		defer writer.Close()
 		_, err := io.Copy(writer, decompressedHandle)
 		if err != nil {
-			log.Printf("error reading compressed object data from file %s: %s",
-				filePath, err.Error())
+			panic(fmt.Errorf("error reading compressed object data from file %s: %w", filePath, err))
 		}
 	}()
 

@@ -30,7 +30,7 @@ func GenerateRandomHexString(byteLength uint) string {
 	data := make([]byte, byteLength)
 	_, err := rand.Read(data)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to read random data: %w", err))
 	}
 	return fmt.Sprintf("%x", data)
 }

@@ -23,8 +23,11 @@ type authToken struct {
 
 func init() {
 	n, err := rand.Read(secret)
-	if n != len(secret) || err != nil {
-		panic(err)
+	if err != nil {
+		panic(fmt.Errorf("failed to read random data: %w", err))
+	}
+	if n != len(secret) {
+		panic(fmt.Errorf("read incomplete random data"))
 	}
 }
 
@@ -34,8 +37,11 @@ func createAuthToken(userId string, expiration time.Duration) authToken {
 	signedData := expiresStr + "." + base64.StdEncoding.EncodeToString([]byte(userId))
 	signer := hmac.New(sha512.New, secret)
 	n, err := signer.Write([]byte(signedData))
-	if n != len(signedData) || err != nil {
-		panic(err)
+	if err != nil {
+		panic(fmt.Errorf("failed to write data to signer: %w", err))
+	}
+	if n != len(signedData) {
+		panic(fmt.Errorf("written incomplete data to signer"))
 	}
 	signature := signer.Sum(nil)
 	token := signedData + "." + base64.StdEncoding.EncodeToString(signature)

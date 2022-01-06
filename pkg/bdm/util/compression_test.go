@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"io"
 	"testing"
 )
@@ -22,10 +23,10 @@ func TestCompression(t *testing.T) {
 
 		n, err := cw.Write(testData)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("failed to write data into compressed writer: %w", err))
 		}
 		if n != len(testData) {
-			panic("failed to write data")
+			panic(fmt.Errorf("failed to write complete data into compressed writer"))
 		}
 	}()
 

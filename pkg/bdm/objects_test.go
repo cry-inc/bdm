@@ -1,6 +1,7 @@
 package bdm
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"testing"
@@ -25,7 +26,7 @@ func TestObjects(t *testing.T) {
 		defer writer.Close()
 		err := WriteObjectsToStream(objects, writer)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("failed to write objects to stream: %w", err))
 		}
 	}()
 

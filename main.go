@@ -97,6 +97,8 @@ func showAbout() {
 }
 
 func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile string, guestReading, guestWriting bool, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
+	log.Print("BDM - Binary Data Manager")
+
 	if port == 0 || float64(port) >= math.Pow(2, 16) {
 		log.Fatal("Invalid port number")
 	}
@@ -130,7 +132,7 @@ func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, de
 		if err != nil {
 			log.Fatalf("Failed to create default user: %v", err)
 		}
-		fmt.Printf("Created default user '%s' with password '%s'\n", defaultUser, password)
+		log.Printf("Created default user '%s' with password '%s'\n", defaultUser, password)
 	}
 
 	tokens, err := server.CreateJsonTokens(tokensFile, users, guestReading, guestWriting)
@@ -139,22 +141,22 @@ func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, de
 	}
 
 	if guestWriting {
-		fmt.Println("WARNING: Guest upload of new packages is enabled. This is not recommended!")
+		log.Print("WARNING: Guest upload of new packages is enabled. This is not recommended!")
 	}
 
 	router := server.CreateRouter(packageStore, limits, users, tokens)
 
 	p := uint16(port)
 	if len(letsEncryptDomain) > 0 {
-		fmt.Printf("Starting Let's Encrypt HTTPS server for domain %s on port %d and 80, cert cache folder '%s' and store folder '%s'\n",
+		log.Printf("Starting Let's Encrypt HTTPS server for domain %s on port %d and 80, cert cache folder '%s' and store folder '%s'\n",
 			letsEncryptDomain, port, certCacheFolder, storePath)
 		server.StartServerLetsEncrypt(p, letsEncryptDomain, certCacheFolder, router)
 	} else if len(certPath) > 0 && len(keyPath) > 0 {
-		fmt.Printf("Starting HTTPS server on port %d, with cert file '%s', key file '%s' and store folder '%s'\n",
+		log.Printf("Starting HTTPS server on port %d, with cert file '%s', key file '%s' and store folder '%s'\n",
 			port, certPath, keyPath, storePath)
 		server.StartServerTLS(p, certPath, keyPath, router)
 	} else {
-		fmt.Printf("Starting HTTP server on port %d and store folder '%s'\n", port, storePath)
+		log.Printf("Starting HTTP server on port %d and store folder '%s'\n", port, storePath)
 		server.StartServer(p, router)
 	}
 }
@@ -162,25 +164,30 @@ func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, de
 func uploadPackage(packageName, inputFolder, serverURL, apiToken string) {
 	validName := bdm.ValidatePackageName(packageName)
 	if !validName {
-		log.Fatal("Invalid package name. Only lower case a-z, 0-9 and the characters - _ are allowed")
+		fmt.Println("Invalid package name. Only lower case a-z, 0-9 and the characters - _ are allowed")
+		os.Exit(1)
 	}
 
 	if len(inputFolder) == 0 {
-		log.Fatal("Missing input folder!")
+		fmt.Println("Missing input folder!")
+		os.Exit(1)
 	}
 
 	if !util.FolderExists(inputFolder) {
-		log.Fatal("Input folder does not exist")
+		fmt.Println("Input folder does not exist")
+		os.Exit(1)
 	}
 
 	err := validateServerURL(serverURL)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	manifest, err := client.UploadPackage(packageName, inputFolder, serverURL, apiToken)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	fmt.Printf("Package %s was successfully published in version %d", manifest.PackageName, manifest.PackageVersion)
@@ -188,75 +195,89 @@ func uploadPackage(packageName, inputFolder, serverURL, apiToken string) {
 
 func downloadPackage(packageName string, packageVersion uint, outputFolder, serverURL, apiToken, cacheFolder string, clean bool) {
 	if len(packageName) == 0 {
-		log.Fatal("Missing package name")
+		fmt.Println("Missing package name")
+		os.Exit(1)
 	}
 
 	if len(outputFolder) == 0 {
-		log.Fatal("Missing output folder")
+		fmt.Println("Missing output folder")
+		os.Exit(1)
 	}
 
 	if packageVersion == 0 {
-		log.Fatal("Missing or invalid package version")
+		fmt.Println("Missing or invalid package version")
+		os.Exit(1)
 	}
 
 	err := validateServerURL(serverURL)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	if len(cacheFolder) > 0 {
 		err = client.DownloadCachedPackage(outputFolder, cacheFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	} else {
 		err = client.DownloadPackage(outputFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 }
 
 func checkPackage(packageName string, packageVersion uint, checkFolder, cacheFolder, serverURL, apiToken string, clean bool) {
 	if len(packageName) == 0 {
-		log.Fatal("Missing package name")
+		fmt.Println("Missing package name")
+		os.Exit(1)
 	}
 
 	if packageVersion == 0 {
-		log.Fatal("Missing or invalid package version")
+		fmt.Println("Missing or invalid package version")
+		os.Exit(1)
 	}
 
 	err := validateServerURL(serverURL)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	if len(cacheFolder) > 0 {
 		err = client.CheckCachedPackage(checkFolder, cacheFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	} else {
 		err = client.CheckPackage(checkFolder, serverURL, apiToken, packageName, packageVersion, clean)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 }
 
 func validateStore(storeFolder string) {
 	if !util.FolderExists(storeFolder) {
-		log.Fatal("Missing store folder")
+		fmt.Println("Missing store folder")
+		os.Exit(1)
 	}
 
 	packageStore, err := store.New((storeFolder))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	stats, err := store.ValidateStore(packageStore)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	for name, value := range stats {
