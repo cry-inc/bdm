@@ -1,4 +1,4 @@
-# Binary Data Manager
+# ![BDM](bdm.svg) Binary Data Manager
 
 ![CI](https://github.com/cry-inc/bdm/workflows/CI/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cry-inc/bdm)](https://goreportcard.com/report/github.com/cry-inc/bdm)
