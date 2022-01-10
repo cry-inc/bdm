@@ -41,6 +41,7 @@ func StartServerLetsEncrypt(port uint16, letsEncryptDomain, certCacheFolder stri
 
 	binding := fmt.Sprintf(":%d", port)
 	tlsConfig := tls.Config{
+		MinVersion:     tls.VersionTLS12,
 		GetCertificate: manager.GetCertificate,
 	}
 
