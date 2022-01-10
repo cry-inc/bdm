@@ -16,15 +16,6 @@ import (
 	"github.com/cry-inc/bdm/pkg/bdm/util"
 )
 
-// BDM version (optionally injected during build)
-var bdmVersion = "n/a"
-
-// git commit hash of build (optionally injected during build)
-var commitHash = "n/a"
-
-// Date string of this build (optionally injected during build)
-var buildDate = "n/a"
-
 func main() {
 	// Application Modes
 	uploadMode := flag.Bool("upload", false, "Enables upload mode to publish new packages.")
