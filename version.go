@@ -1,10 +1,15 @@
 package main
 
-// BDM version (optionally injected during build)
-var bdmVersion = "n/a"
+// BDM version (major.minor.patch.build)
+// Major, minor and patch are updated manually,
+// build is injected during CI builds.
+var bdmVersion = "0.4.0.0"
 
-// git commit hash of build (optionally injected during build)
-var commitHash = "n/a"
+// Git commit hash of build (injected during CI builds)
+var gitCommit = "n/a"
 
-// Date string of this build (optionally injected during build)
+// Git ref (branch or tag, injected during CI builds)
+var gitRef = "n/a"
+
+// Date string of this build (injected during CI builds)
 var buildDate = "n/a"

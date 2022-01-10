@@ -79,12 +79,13 @@ func main() {
 
 func showAbout() {
 	fmt.Printf("Build Info:\n")
-	fmt.Printf("  Version: %s\n", bdmVersion)
-	fmt.Printf("  Commit:  %s\n", commitHash)
-	fmt.Printf("  Date:    %s\n", buildDate)
-	fmt.Printf("  Go:      %s\n", runtime.Version())
-	fmt.Printf("  OS:      %s\n", runtime.GOOS)
-	fmt.Printf("  Arch:    %s\n", runtime.GOARCH)
+	fmt.Printf("  Version:    %s\n", bdmVersion)
+	fmt.Printf("  Git Commit: %s\n", gitCommit)
+	fmt.Printf("  Git Ref:    %s\n", gitRef)
+	fmt.Printf("  Date:       %s\n", buildDate)
+	fmt.Printf("  Go:         %s\n", runtime.Version())
+	fmt.Printf("  OS:         %s\n", runtime.GOOS)
+	fmt.Printf("  Arch:       %s\n", runtime.GOARCH)
 }
 
 func startServer(port uint, limits *bdm.ManifestLimits, storePath, usersFile, defaultUser, tokensFile string, guestReading, guestWriting bool, certPath, keyPath, letsEncryptDomain, certCacheFolder string) {
