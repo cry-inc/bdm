@@ -8,9 +8,12 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17'
-      - run: go version
-      - run: GOOS=linux GOARCH=amd64 go build -v -o bdm -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
-      - run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe -ldflags "-X main.commitHash=$GITHUB_SHA -X main.buildDate=$(date -Iseconds)"
+      - run: sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
+      - run: sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
+      - run: sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
+      - run: sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
+      - run: GOOS=linux GOARCH=amd64 go build -v -o bdm
+      - run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe
       - run: go test -v ./...
       - run: ./bdm -about
       - run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
@@ -42,5 +45,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - run: sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
+      - run: sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
+      - run: sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
+      - run: sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
       - run: docker build . -t=bdm
       - run: docker run --rm bdm bdm -about
