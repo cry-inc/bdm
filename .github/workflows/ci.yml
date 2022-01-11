@@ -1,59 +1,41 @@
 name: CI
 on: push
+env:
+  go_version: '1.17'
 jobs:
-  build-and-test-linux:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.17'
-      - run: sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
-      - run: sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
-      - run: sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
-      - run: sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
-      - run: GOOS=linux GOARCH=amd64 go build -v -o bdm
-      - run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe
-      - run: go test -v ./...
-      - run: ./bdm -about
-      - run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
-      - run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
-      - uses: actions/upload-artifact@v2
-        with:
-          name: bdm_linux_amd64
-          path: |
-            bdm
-            LICENSE
-      - uses: actions/upload-artifact@v2
-        with:
-          name: bdm_windows_amd64
-          path: |
-            bdm.exe
-            LICENSE
-  build-and-test-windows:
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.17'
-      - run: go version
-      - run: go build -v
-      - run: go test -v ./...
-      - run: .\bdm.exe -about
-  docker-image:
+  Linux:
     runs-on: ubuntu-20.04
     permissions:
       packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{env.go_version}}
       - name: Inject Build Info
         run: |
           sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
           sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
           sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
           sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
+
+      - name: Build Linux Binary
+        run: GOOS=linux GOARCH=amd64 go build -v -o bdm
+      - name: Build Windows Binary
+        run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe
+
+      - name: Run Go Tests
+        run: go test -v ./...
+      - name: Test Linux Binary
+        run: ./bdm -about
+
+      - name: Build C Library
+        run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
+      - name: Build C Example Code
+        run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
+
       - name: Build Docker Image
         run: docker build . -t=bdm
       - name: Test Docker Image
@@ -64,3 +46,33 @@ jobs:
           echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
           docker tag bdm ghcr.io/${{github.actor}}/bdm:latest
           docker push ghcr.io/${{github.actor}}/bdm:latest
+
+      - name: Publish Linux Binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: bdm_linux_amd64
+          path: |
+            bdm
+            LICENSE
+      - name: Publish Windows Binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: bdm_windows_amd64
+          path: |
+            bdm.exe
+            LICENSE
+  Windows:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{env.go_version}}
+      - name: Build Windows Binary
+        run: go build -v
+      - name: Run Go Tests
+        run: go test -v ./...
+      - name: Test Windows Binary
+        run: .\bdm.exe -about
