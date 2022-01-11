@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/cry-inc/bdm)](https://goreportcard.com/report/github.com/cry-inc/bdm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-The Binary Data Mangager is a system that allows users to create a versioned repository of packages. A package is just a folder with a bunch of files in it. Packages are immutable, once published they stay always the same and cannot be modified. If you want to change a package, you must publish a new version of the package. The system was designed to handle binary assets used for testing in software development, but can be also used for other kinds of assets and artifacts that can be represented as a simple set of files.
+The Binary Data Manager is a system that allows users to create a versioned repository of packages. A package is just a folder with a bunch of files in it. Packages are immutable, once published they stay always the same and cannot be modified. If you want to change a package, you must publish a new version of the package. The system was designed to handle binary assets used for testing in software development, but can be also used for other kinds of assets and artifacts that can be represented as a simple set of files.
 
 The system works centralized with a repository server. This server holds all packages. Clients can upload new packages or download them from the server. The server uses HTTP to communicate with clients.
 
@@ -14,7 +14,7 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 
 * Client and server in a single portable binary (implemented in pure Go)
 * File deduplication for the server, network transfer and caches
-* File verification and identifaction using fast cryptographic hashes (BLAKE3)
+* File verification and identification using fast cryptographic hashes (BLAKE3)
 * Packages are described and validated using JSON manifests
 * Compressed server side storage and network data transfer (zstd)
 * Optional client side caching to avoid network transfers
@@ -42,11 +42,12 @@ Both, server and client, are contained in the same portable CLI tool called "bdm
 
 ## Docker
 
-1. Use `docker build . -t=bdm` to build and tag the Docker image
-2. Run `docker run --rm -p 2323:2323 -v /host/folder:/bdmdata bdm` to start a HTTP server on the (default) port 2323 and a persistent data location on the host file system. BDM will create an default admin account and display the randomly generated intial password during the first start.
-3. Run `docker run --rm -p 443:443 -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/folder:/bdmdata bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
-4. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_LETS_ENCRYPT=mydomain.com -v /host/folder:/bdmdata bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate aquisition it will redirect to the HTTPS port of the server.
-5. Check the Dockerfile for additional optional environment variables.
+1. Use `docker build . -t=bdm` to build your own Docker image from the source code
+2. You can also run `docker pull ghcr.io/cry-inc/bdm:latest` to download the latest pre-built image (based on the master branch)
+3. Run `docker run --rm -p 2323:2323 -v /host/folder:/bdmdata bdm` to start a HTTP server on the (default) port 2323 and a persistent data location on the host file system. BDM will create an default admin account and display the randomly generated initial password during the first start.
+4. Run `docker run --rm -p 443:443 -e BDM_PORT=443 -e BDM_HTTPS_CERT=/path/cert.pem -e BDM_HTTPS_KEY=/path/key.pem -v /host/folder:/bdmdata bdm` to start a HTTPS server using a pre-existing certificate. The certificate and key files need to be mounted into the container.
+5. Run `docker run --rm -p 2323:2323 -p 80:80 -e BDM_LETS_ENCRYPT=mydomain.com -v /host/folder:/bdmdata bdm` to start a HTTPS server using a cached Let's Encrypt certificate. In this case port 80 needs to be reachable from the Internet. After the certificate acquisition it will redirect to the HTTPS port of the server.
+6. Check the Dockerfile for additional optional environment variables.
 
 ## User accounts and tokens
 
@@ -68,7 +69,7 @@ The specific requirements that I was trying to satisfy were:
 * Lightweight and portable server and client application
 * File deduplication and compression to minimize storage and bandwidth costs
 * Intelligent package restore (omits downloading and restoring existing files)
-* Local caching for slow or expensive internet connections
+* Local caching for slow or expensive Internet connections
 * Easy backup of all package repository data on the server
 * Simple API or client library for integration in custom applications and scripts
 * Downloading of packages and files using a persistent URL via browser without the need for a client application
