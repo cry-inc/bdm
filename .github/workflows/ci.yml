@@ -1,17 +1,17 @@
 name: CI
 on: push
 env:
-  go_version: '1.17'
+  go_version: stable
 jobs:
   Linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{env.go_version}}
       - name: Inject Build Info
@@ -48,26 +48,26 @@ jobs:
           docker push ghcr.io/${{github.actor}}/bdm:latest
 
       - name: Publish Linux Binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bdm_linux_amd64
           path: |
             bdm
             LICENSE
       - name: Publish Windows Binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bdm_windows_amd64
           path: |
             bdm.exe
             LICENSE
   Windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{env.go_version}}
       - name: Build Windows Binary
