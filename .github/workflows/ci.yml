@@ -8,71 +8,71 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{env.go_version}}
-      - name: Inject Build Info
-        run: |
-          sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
-          sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
-          sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
-          sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{env.go_version}}
+    - name: Inject Build Info
+      run: |
+        sed -i 's/"\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\).\(\b[0-9]\+\b\)"/"\1.\2.\3.${{github.run_number}}"/g' version.go
+        sed -i 's:var gitCommit = "n/a":var gitCommit = "${{github.sha}}":g' version.go
+        sed -i 's:var gitRef = "n/a":var gitRef = "${{github.ref}}":g' version.go
+        sed -i "s/var buildDate = \x22n\/a\x22/var buildDate = \x22$(date -Iseconds)\x22/g" version.go
 
-      - name: Build Linux Binary
-        run: GOOS=linux GOARCH=amd64 go build -v -o bdm
-      - name: Build Windows Binary
-        run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe
+    - name: Build Linux Binary
+      run: GOOS=linux GOARCH=amd64 go build -v -o bdm
+    - name: Build Windows Binary
+      run: GOOS=windows GOARCH=amd64 go build -v -o bdm.exe
 
-      - name: Run Go Tests
-        run: go test -v ./...
-      - name: Test Linux Binary
-        run: ./bdm -about
+    - name: Run Go Tests
+      run: go test -v ./...
+    - name: Test Linux Binary
+      run: ./bdm -about
 
-      - name: Build C Library
-        run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
-      - name: Build C Example Code
-        run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
+    - name: Build C Library
+      run: cd clib && go build -v -buildmode=c-archive -o bdm.lib
+    - name: Build C Example Code
+      run: cd csample && gcc -o example -pthread example.c ../clib/bdm.lib
 
-      - name: Build Docker Image
-        run: docker build . -t=bdm
-      - name: Test Docker Image
-        run: docker run --rm bdm bdm -about
-      - name: Publish Docker Image
-        if: ${{github.ref == 'refs/heads/master'}}
-        run: |
-          echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
-          docker tag bdm ghcr.io/${{github.actor}}/bdm:latest
-          docker push ghcr.io/${{github.actor}}/bdm:latest
+    - name: Build Docker Image
+      run: docker build . -t=bdm
+    - name: Test Docker Image
+      run: docker run --rm bdm bdm -about
+    - name: Publish Docker Image
+      if: ${{github.ref == 'refs/heads/master'}}
+      run: |
+        echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
+        docker tag bdm ghcr.io/${{github.actor}}/bdm:latest
+        docker push ghcr.io/${{github.actor}}/bdm:latest
 
-      - name: Publish Linux Binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: bdm_linux_amd64
-          path: |
-            bdm
-            LICENSE
-      - name: Publish Windows Binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: bdm_windows_amd64
-          path: |
-            bdm.exe
-            LICENSE
+    - name: Publish Linux Binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: bdm_linux_amd64
+        path: |
+          bdm
+          LICENSE
+    - name: Publish Windows Binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: bdm_windows_amd64
+        path: |
+          bdm.exe
+          LICENSE
   Windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{env.go_version}}
-      - name: Build Windows Binary
-        run: go build -v
-      - name: Run Go Tests
-        run: go test -v ./...
-      - name: Test Windows Binary
-        run: .\bdm.exe -about
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{env.go_version}}
+    - name: Build Windows Binary
+      run: go build -v
+    - name: Run Go Tests
+      run: go test -v ./...
+    - name: Test Windows Binary
+      run: .\bdm.exe -about
